@@ -104,6 +104,7 @@ export async function addHealthRecordAction(
       nextDate: data.nextDate ?? null,
       note: data.note ?? null,
       source: 'SELF', // owner-added; vet records arrive as source=VET (PLAN.md §2.3)
+      addedById: session.user.id,
     },
   });
 

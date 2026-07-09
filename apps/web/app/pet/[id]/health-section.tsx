@@ -21,8 +21,8 @@ export interface HealthRecordView {
   dateStr: string;
   nextDateStr: string | null;
   note: string | null;
-  source: string; // SELF | VET
-  vetLabel?: string | null;
+  source: string; // SELF | VET (SELF records are owner-deletable)
+  byLabel: string; // "{ad} tərəfindən" / "… (keçmiş sahib)" / "{klinika} tərəfindən"
 }
 
 export function HealthSection({ petId, records }: { petId: string; records: HealthRecordView[] }) {
@@ -45,12 +45,8 @@ export function HealthSection({ petId, records }: { petId: string; records: Heal
                     {HEALTH_TYPE_LABEL[r.type] ?? r.type}
                   </span>
                   <span className="font-medium">{r.name}</span>
-                  <span
-                    className={`text-xs ${r.source === 'VET' ? 'text-teal-600' : 'text-brand-900/50'}`}
-                  >
-                    {r.source === 'VET'
-                      ? `${r.vetLabel ?? 'Baytar'} tərəfindən`
-                      : 'Pet sahibi tərəfindən'}
+                  <span className={`text-xs ${r.source === 'VET' ? 'text-teal-600' : 'text-brand-900/50'}`}>
+                    {r.byLabel}
                   </span>
                 </div>
                 <div className="mt-1 text-brand-900/60">

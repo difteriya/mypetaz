@@ -175,6 +175,7 @@ model User {
   messages                 Message[]           @relation("MessageSender")
   conversationsAsBuyer     Conversation[]      @relation("BuyerConversations")
   conversationsAsSeller    Conversation[]      @relation("SellerConversations")
+  healthRecordsAdded       PetHealthRecord[]   @relation("HealthRecordAuthor")
   transfersGiven           OwnershipTransfer[] @relation("TransferOldOwner")
   transfersReceived        OwnershipTransfer[] @relation("TransferNewOwner")
   vetAppointmentsRequested VetAppointment[]    @relation("AppointmentRequester")
@@ -435,11 +436,13 @@ model PetHealthRecord {
   date             DateTime
   nextDate         DateTime? // for future reminders (Phase 2)
   note             String?
-  source           HealthRecordSource @default(SELF) // "Özüm" vs "Baytar: Dr. X"
+  source           HealthRecordSource @default(SELF) // owner vs vet
+  addedById        String? // the user who added it (owner at the time)
   vetAppointmentId String? // linked if a vet added it
   createdAt        DateTime           @default(now())
 
   pet            Pet             @relation(fields: [petId], references: [id], onDelete: Cascade)
+  addedBy        User?           @relation("HealthRecordAuthor", fields: [addedById], references: [id], onDelete: SetNull)
   vetAppointment VetAppointment? @relation(fields: [vetAppointmentId], references: [id])
   vetVisitRecord VetVisitRecord?
 

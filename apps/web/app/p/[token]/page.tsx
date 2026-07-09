@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSharedByToken, bumpShareView, type SharedFields } from '@/lib/passport/data';
 import { imageVariant } from '@/lib/images';
+import { healthSourceLabel } from '@/lib/pets/health-label';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 const HEALTH_LABEL: Record<string, string> = { VACCINE: 'Peyvənd', EXAM: 'Müayinə', SURGERY: 'Əməliyyat' };
@@ -109,7 +110,15 @@ export default async function SharedPassportPage({ params }: { params: Promise<{
                   <span className="text-brand-900/50">{r.date.toISOString().slice(0, 10)}</span> ·{' '}
                   {HEALTH_LABEL[r.type] ?? r.type} · {r.name}{' '}
                   <span className="text-brand-900/40">
-                    ({r.source === 'VET' ? 'Baytar tərəfindən' : 'Pet sahibi tərəfindən'})
+                    (
+                    {healthSourceLabel({
+                      source: r.source,
+                      ownerId: pet.ownerId,
+                      addedById: r.addedById,
+                      addedByName: r.addedBy?.name,
+                      vetName: r.vetAppointment?.vet?.clinicName,
+                    })}
+                    )
                   </span>
                 </li>
               ))}

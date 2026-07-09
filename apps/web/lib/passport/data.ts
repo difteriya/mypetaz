@@ -24,7 +24,13 @@ export function getSharedByToken(token: string) {
           category: true,
           breed: true,
           passport: true,
-          healthRecords: { orderBy: { date: 'desc' } },
+          healthRecords: {
+            orderBy: { date: 'desc' },
+            include: {
+              addedBy: { select: { id: true, name: true } },
+              vetAppointment: { select: { vet: { select: { clinicName: true } } } },
+            },
+          },
         },
       },
     },

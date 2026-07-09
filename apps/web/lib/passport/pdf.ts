@@ -5,6 +5,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import sharp from 'sharp';
 import type { SharedPet, SharedFields } from './data';
+import { healthSourceLabel } from '@/lib/pets/health-label';
 
 const UPLOAD_ROOT = process.env.UPLOAD_DIR ?? path.join(process.cwd(), 'public', 'uploads');
 const FONT_PATH =
@@ -85,7 +86,13 @@ export async function buildPassportPdf(shared: SharedPet): Promise<Uint8Array> {
     line('Tibbi tarixçə', 14, BRAND);
     for (const r of pet.healthRecords) {
       if (y < 60) break; // single page
-      const src = r.source === 'VET' ? 'Baytar tərəfindən' : 'Pet sahibi tərəfindən';
+      const src = healthSourceLabel({
+        source: r.source,
+        ownerId: pet.ownerId,
+        addedById: r.addedById,
+        addedByName: r.addedBy?.name,
+        vetName: r.vetAppointment?.vet?.clinicName,
+      });
       line(
         `${r.date.toISOString().slice(0, 10)}  ·  ${HEALTH_LABEL[r.type] ?? r.type}  ·  ${r.name}  (${src})`,
         10,

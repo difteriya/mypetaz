@@ -7,6 +7,7 @@ import { getPetForOwner } from '@/lib/pets/data';
 import { deletePetAction } from '@/lib/pets/actions';
 import { PassportSection } from './passport-section';
 import { HealthSection, type HealthRecordView } from './health-section';
+import { healthSourceLabel } from '@/lib/pets/health-label';
 import { PetImages } from './pet-images';
 import { TransferForm } from './transfer-form';
 
@@ -45,7 +46,13 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
     nextDateStr: r.nextDate ? toDateStr(r.nextDate) : null,
     note: r.note,
     source: r.source,
-    vetLabel: r.vetAppointment?.vet?.clinicName ?? null,
+    byLabel: healthSourceLabel({
+      source: r.source,
+      ownerId: pet.ownerId,
+      addedById: r.addedById,
+      addedByName: r.addedBy?.name,
+      vetName: r.vetAppointment?.vet?.clinicName,
+    }),
   }));
 
   const staticFields = (pet.staticFields ?? {}) as Record<string, unknown>;

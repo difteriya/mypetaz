@@ -17,6 +17,7 @@ import { ReviewSection } from '@/components/reviews/review-section';
 import { ReportButton } from '@/components/report-button';
 import { JsonLd, APP_URL } from '@/components/json-ld';
 import { PawIcon, CheckIcon, StarRating } from '@/components/icons';
+import { healthSourceLabel } from '@/lib/pets/health-label';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 const HEALTH_LABEL: Record<string, string> = { VACCINE: 'Peyvənd', EXAM: 'Müayinə', SURGERY: 'Əməliyyat' };
@@ -172,9 +173,13 @@ export async function ListingDetailView({ slug }: { slug: string }) {
                       <span className="text-ink/50">{r.date.toISOString().slice(0, 10)}</span>
                       {r.nextDate && <span className="text-ink/40">· növbəti: {r.nextDate.toISOString().slice(0, 10)}</span>}
                       <span className={`ml-auto text-xs ${r.source === 'VET' ? 'text-teal-600' : 'text-ink/40'}`}>
-                        {r.source === 'VET'
-                          ? `${r.vetAppointment?.vet?.clinicName ?? 'Baytar'} tərəfindən`
-                          : 'Pet sahibi tərəfindən'}
+                        {healthSourceLabel({
+                          source: r.source,
+                          ownerId: pet.ownerId,
+                          addedById: r.addedById,
+                          addedByName: r.addedBy?.name,
+                          vetName: r.vetAppointment?.vet?.clinicName,
+                        })}
                       </span>
                     </li>
                   ))}
