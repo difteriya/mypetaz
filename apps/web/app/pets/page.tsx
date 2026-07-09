@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
-import { listMyPets } from '@/lib/pets/data';
+import { listMyPets, getMyTransfersArchive } from '@/lib/pets/data';
 import { imageVariant } from '@/lib/images';
 
 export const metadata: Metadata = { title: 'Mənim petlərim' };
@@ -12,7 +12,10 @@ export default async function MyPetsPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
-  const pets = await listMyPets(session.user.id);
+  const [pets, archive] = await Promise.all([
+    listMyPets(session.user.id),
+    getMyTransfersArchive(session.user.id),
+  ]);
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-10">
@@ -66,6 +69,26 @@ export default async function MyPetsPage() {
             );
           })}
         </div>
+      )}
+
+      {archive.length > 0 && (
+        <section className="mt-10">
+          <h2 className="mb-3 text-lg font-semibold text-brand-900/70">Köçürülmüş petlər</h2>
+          <ul className="space-y-2">
+            {archive.map((t) => (
+              <li
+                key={t.id}
+                className="flex items-center gap-3 rounded-card border border-cream-200 bg-white/60 p-3 text-sm text-brand-900/60"
+              >
+                <span className="text-xl">{t.pet.category.emoji}</span>
+                <span className="font-medium">{t.pet.name}</span>
+                <span>·</span>
+                <span>Köçürülüb: {t.newOwner.name ?? t.newOwner.email}</span>
+                <span className="ml-auto text-xs">{t.createdAt.toISOString().slice(0, 10)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </main>
   );

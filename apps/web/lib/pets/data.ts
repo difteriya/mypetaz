@@ -36,6 +36,18 @@ export function listMyPets(ownerId: string) {
   });
 }
 
+/** "Köçürülmüş" archive — pets this user transferred away (read-only, PLAN.md §2.5). */
+export function getMyTransfersArchive(oldOwnerId: string) {
+  return prisma.ownershipTransfer.findMany({
+    where: { oldOwnerId, reverted: false },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      pet: { select: { name: true, category: { select: { name: true, emoji: true } } } },
+      newOwner: { select: { name: true, email: true } },
+    },
+  });
+}
+
 /** A single pet, scoped to its owner (full view). */
 export function getPetForOwner(id: string, ownerId: string) {
   return prisma.pet.findFirst({
