@@ -16,6 +16,7 @@ import { ReviewSection } from '@/components/reviews/review-section';
 import { ReportButton } from '@/components/report-button';
 import { JsonLd, APP_URL } from '@/components/json-ld';
 import { PawIcon, CheckIcon } from '@/components/icons';
+import { ListingGallery } from './listing-gallery';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 
@@ -100,17 +101,7 @@ export async function ListingDetailView({ slug }: { slug: string }) {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div>
-          {pet.images.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {pet.images.map((img) => (
-                <img key={img.id} src={imageVariant(img.url, 'detail')} alt={img.alt} className="aspect-square w-full rounded-card object-cover" />
-              ))}
-            </div>
-          ) : (
-            <div className="flex aspect-video items-center justify-center rounded-card bg-cream-100">
-              <PawIcon className="size-16 text-brand-200" />
-            </div>
-          )}
+          <ListingGallery images={pet.images.map((img) => ({ id: img.id, url: img.url, alt: img.alt }))} />
 
           <div className="mt-4 flex items-center gap-2">
             <ListingBadge type={listing.type} />

@@ -104,7 +104,7 @@ const CATEGORIES: CategorySeed[] = [
   },
   {
     slug: 'gemiriciler',
-    name: 'Gəmiricilər (Xomyak və bənzərləri)',
+    name: 'Gəmirici',
     emoji: '🐹',
     order: 4,
     breeds: [

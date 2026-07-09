@@ -178,6 +178,17 @@ export function getListingStatusBySlug(slug: string) {
   return prisma.listing.findUnique({ where: { slug }, select: { status: true } });
 }
 
+/** Active listing count per category id (for home category cards). */
+export async function getCategoryListingCounts(): Promise<Record<string, number>> {
+  const rows = await prisma.listing.findMany({
+    where: { status: 'ACTIVE' },
+    select: { pet: { select: { categoryId: true } } },
+  });
+  const map: Record<string, number> = {};
+  for (const r of rows) map[r.pet.categoryId] = (map[r.pet.categoryId] ?? 0) + 1;
+  return map;
+}
+
 export async function getPublicCounts() {
   const [listings, businesses, posts] = await Promise.all([
     prisma.listing.count({ where: { status: 'ACTIVE' } }),

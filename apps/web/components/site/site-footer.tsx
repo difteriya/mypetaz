@@ -33,9 +33,6 @@ export function SiteFooter({ footer }: { footer: Record<string, string> }) {
             <Link href="/about" className="hover:text-brand-700">
               Haqqımızda
             </Link>
-            <Link href="/contact" className="hover:text-brand-700">
-              Əlaqə
-            </Link>
             <Link href="/terms" className="hover:text-brand-700">
               İstifadə şərtləri
             </Link>

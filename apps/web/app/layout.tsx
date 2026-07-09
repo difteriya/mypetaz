@@ -36,15 +36,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="az" className={`${display.variable} ${body.variable}`}>
-      <body className="min-h-screen antialiased">
+      <body className="flex min-h-screen flex-col antialiased">
         <NextTopLoader color="#f4622f" height={3} showSpinner={false} shadow="0 0 8px #f4622f" />
         <AdBackground global={global.raw} />
         <AdHeader global={global.raw} />
         <SiteHeader />
         <AccountNav />
         {/* Boxed content column — its opaque background covers the ad in the
-            centre; only the left/right strips remain visible (PLAN.md §5.1). */}
-        <div className="relative mx-auto min-h-[60vh] max-w-[1280px] bg-cream-100">{children}</div>
+            centre; only the left/right strips remain visible (PLAN.md §5.1).
+            flex-1 pushes the footer to the bottom on short pages. */}
+        <div className="relative mx-auto w-full max-w-[1280px] flex-1 bg-cream-100">{children}</div>
         <SiteFooter footer={footer.raw} />
       </body>
     </html>

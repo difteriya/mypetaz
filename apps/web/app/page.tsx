@@ -4,7 +4,9 @@ import {
   getFeaturedListings,
   getLatestListings,
   getCategoriesWithBreeds,
+  getCategoryListingCounts,
 } from '@/lib/listings/data';
+import { CategoryIcon } from '@/components/category-icons';
 import { getBlockMap } from '@/lib/cms/data';
 import { imageVariant } from '@/lib/images';
 import { ListingCard } from '@/components/listings/listing-card';
@@ -12,21 +14,12 @@ import { JsonLd, APP_URL } from '@/components/json-ld';
 import { LISTING_TYPES } from '@/lib/listings/schema';
 import { listingTypeLabel } from '@/components/listings/listing-badge';
 
-const TILE_TONES = [
-  'bg-brand-100 text-brand-800',
-  'bg-teal-100 text-teal-600',
-  'bg-amber-100 text-amber-700',
-  'bg-rose-100 text-rose-700',
-  'bg-violet-100 text-violet-700',
-  'bg-sky-100 text-sky-700',
-  'bg-lime-100 text-lime-700',
-];
-
 export default async function HomePage() {
-  const [featured, latest, categories, home] = await Promise.all([
+  const [featured, latest, categories, catCounts, home] = await Promise.all([
     getFeaturedListings(),
     getLatestListings(8),
     getCategoriesWithBreeds(),
+    getCategoryListingCounts(),
     getBlockMap('HOME'),
   ]);
   const leftImg = home.get('hero_left_image');
@@ -117,14 +110,16 @@ export default async function HomePage() {
       <section className="mt-14">
         <h2 className="mb-5 text-2xl font-extrabold text-ink">Kateqoriyalar</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-          {categories.map((c, i) => (
+          {categories.map((c) => (
             <Link
               key={c.id}
               href={`/listings?categoryId=${c.id}`}
-              className={`flex aspect-square flex-col items-center justify-center gap-2 rounded-3xl p-4 text-center font-bold transition-all hover:-translate-y-1 hover:shadow-soft ${TILE_TONES[i % TILE_TONES.length]}`}
+              className="flex flex-col items-center gap-3 rounded-3xl bg-white p-5 text-center ring-1 ring-cream-200 transition-all hover:-translate-y-1 hover:shadow-soft"
             >
-              <span className="text-lg leading-tight">{c.name}</span>
-              <span className="text-xs font-semibold opacity-70">{c.breeds.length} cins</span>
+              <CategoryIcon slug={c.slug} className="size-14" />
+              <span className="font-bold text-ink">
+                {c.name} <span className="font-semibold text-ink/40">({catCounts[c.id] ?? 0})</span>
+              </span>
             </Link>
           ))}
         </div>

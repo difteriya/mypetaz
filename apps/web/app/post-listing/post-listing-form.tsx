@@ -72,10 +72,10 @@ export function PostListingForm({
         <input id="title" name="title" required minLength={3} maxLength={100} className={inputClass} />
       </div>
 
-      {type === 'SALE' && (
+      {(type === 'SALE' || type === 'MATING') && (
         <div className="space-y-1">
           <label htmlFor="price" className={labelClass}>
-            Qiymət (₼) <span className="text-badge-lostfound">*</span>
+            Qiymət (₼) {type === 'SALE' && <span className="text-badge-lostfound">*</span>}
           </label>
           <input id="price" name="price" type="number" step="any" min={0} className={inputClass} />
         </div>
