@@ -31,6 +31,9 @@ export default async function DashboardPage() {
         <Link href="/pets">
           <Button>Mənim petlərim</Button>
         </Link>
+        <Link href="/dashboard/listings">
+          <Button variant="secondary">Mənim elanlarım</Button>
+        </Link>
         <form action={logoutAction}>
           <Button type="submit" variant="secondary">
             Çıxış
