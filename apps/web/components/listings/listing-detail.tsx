@@ -4,8 +4,9 @@ import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
 import { getListingBySlug, getSimilarListings, getListingStatusBySlug } from '@/lib/listings/data';
 import { imageVariant } from '@/lib/images';
-import { ListingBadge } from './listing-badge';
+import { ListingBadge, listingTypeLabel } from './listing-badge';
 import { ListingCard } from './listing-card';
+import { ListingGallery } from './listing-gallery';
 import { PriceTag } from './price-tag';
 import { PhoneReveal } from './phone-reveal';
 import { FavoriteButton } from './favorite-button';
@@ -16,16 +17,14 @@ import { ReviewSection } from '@/components/reviews/review-section';
 import { ReportButton } from '@/components/report-button';
 import { JsonLd, APP_URL } from '@/components/json-ld';
 import { PawIcon, CheckIcon } from '@/components/icons';
-import { ListingGallery } from './listing-gallery';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
+const card = 'rounded-card bg-white p-5 ring-1 ring-cream-200';
 
-/** Listing detail with Product/Offer + BreadcrumbList JSON-LD (PLAN.md §8.3). */
 export async function ListingDetailView({ slug }: { slug: string }) {
   const listing = await getListingBySlug(slug);
 
   if (!listing) {
-    // FINISHED/removed → friendly "gone" page instead of a soft-404 (§8.4).
     const existing = await getListingStatusBySlug(slug);
     if (!existing) notFound();
     return (
@@ -42,9 +41,6 @@ export async function ListingDetailView({ slug }: { slug: string }) {
 
   const { pet } = listing;
   const staticFields = (pet.staticFields ?? {}) as Record<string, unknown>;
-  const dynamicRows = pet.category.fields
-    .map((f) => ({ label: f.label, value: staticFields[f.fieldName], type: f.type }))
-    .filter((r) => r.value !== undefined && r.value !== '' && r.value !== null);
   const business = listing.user.businessProfile;
   const [session, similar] = await Promise.all([auth(), getSimilarListings(listing)]);
   const canMessage = session?.user && session.user.id !== listing.userId;
@@ -54,6 +50,22 @@ export async function ListingDetailView({ slug }: { slug: string }) {
     listReviews('LISTING', listing.id),
     session?.user ? getMyReview(session.user.id, 'LISTING', listing.id) : Promise.resolve(null),
   ]);
+
+  const specs: Array<[string, string]> = [
+    ['Kateqoriya', pet.category.name],
+    ['Cins / növ', pet.breed?.name ?? pet.breedFreeText ?? '—'],
+    ['Cinsiyyət', SEX_LABEL[pet.sex] ?? pet.sex],
+    ...(pet.birthDate ? [['Doğum tarixi', pet.birthDate.toISOString().slice(0, 10)] as [string, string]] : []),
+    ...(pet.color ? [['Rəng', pet.color] as [string, string]] : []),
+    ...(pet.weight != null ? [['Çəki', `${pet.weight} kq`] as [string, string]] : []),
+    ...(pet.microchipNo ? [['Mikroçip', pet.microchipNo] as [string, string]] : []),
+    ...(listing.city ? [['Şəhər', listing.city.name] as [string, string]] : []),
+    ...(listing.address ? [['Ünvan', listing.address] as [string, string]] : []),
+    ...pet.category.fields
+      .map((f) => ({ label: f.label, value: staticFields[f.fieldName], type: f.type }))
+      .filter((r) => r.value !== undefined && r.value !== '' && r.value !== null)
+      .map((r) => [r.label, r.type === 'BOOL' ? (r.value ? 'Bəli' : 'Xeyr') : String(r.value)] as [string, string]),
+  ];
 
   const jsonLd = [
     {
@@ -79,7 +91,7 @@ export async function ListingDetailView({ slug }: { slug: string }) {
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Ana səhifə', item: APP_URL },
         { '@type': 'ListItem', position: 2, name: 'Elanlar', item: `${APP_URL}/listings` },
-        { '@type': 'ListItem', position: 3, name: `${pet.category.name}`, item: `${APP_URL}/listings/${pet.category.slug}` },
+        { '@type': 'ListItem', position: 3, name: pet.category.name, item: `${APP_URL}/listings/${pet.category.slug}` },
         { '@type': 'ListItem', position: 4, name: listing.title, item: `${APP_URL}/listings/${listing.slug}` },
       ],
     },
@@ -88,119 +100,120 @@ export async function ListingDetailView({ slug }: { slug: string }) {
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-8">
       <JsonLd data={jsonLd} />
-      <nav className="mb-3 text-sm text-brand-900/50">
+      <nav className="mb-3 text-sm text-ink/50">
         <Link href="/listings" className="hover:underline">
           Elanlar
         </Link>{' '}
         ›{' '}
         <Link href={`/listings/${pet.category.slug}`} className="hover:underline">
           {pet.category.name}
-        </Link>{' '}
-        › <span>{listing.title}</span>
+        </Link>
       </nav>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div>
-          <ListingGallery images={pet.images.map((img) => ({ id: img.id, url: img.url, alt: img.alt }))} />
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        {/* LEFT */}
+        <div className="min-w-0">
+          <h1 className="text-2xl font-extrabold text-ink sm:text-3xl">{listing.title}</h1>
+          <p className="mt-1 text-sm text-ink/50">
+            {listing.city ? `${listing.city.name} · ` : ''}
+            {listing.createdAt.toISOString().slice(0, 10)} · Elan № {listing.id.slice(-6)}
+          </p>
 
-          <div className="mt-4 flex items-center gap-2">
-            <ListingBadge type={listing.type} />
-            {listing.featured && (
-              <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-white">Seçilmiş</span>
-            )}
+          <div className="mt-4">
+            <ListingGallery images={pet.images.map((img) => ({ id: img.id, url: img.url, alt: img.alt }))} />
           </div>
 
-          <h1 className="mt-2 text-2xl font-bold text-brand-700">{listing.title}</h1>
-          {listing.price != null && (
-            <PriceTag value={Number(listing.price)} className="mt-1 block text-2xl font-bold" />
-          )}
-
-          <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-card bg-white p-5 text-sm">
-            {(
-              [
-                ['Kateqoriya', pet.category.name],
-                ['Cins/növ', pet.breed?.name ?? pet.breedFreeText ?? '—'],
-                ['Cinsiyyət', SEX_LABEL[pet.sex] ?? pet.sex],
-                ...(listing.city ? [['Şəhər', listing.city.name] as [string, string]] : []),
-                ...(listing.address ? [['Ünvan', listing.address] as [string, string]] : []),
-              ] as Array<[string, string]>
-            ).map(([label, value]) => (
-              <div key={label} className="contents">
-                <dt className="text-brand-900/50">{label}</dt>
-                <dd>{value}</dd>
-              </div>
-            ))}
-            {dynamicRows.map((r) => (
-              <div key={r.label} className="contents">
-                <dt className="text-brand-900/50">{r.label}</dt>
-                <dd>{r.type === 'BOOL' ? (r.value ? 'Bəli' : 'Xeyr') : String(r.value)}</dd>
-              </div>
-            ))}
-          </dl>
+          <section className={`mt-6 ${card}`}>
+            <h2 className="mb-3 font-bold text-ink">Xüsusiyyətlər</h2>
+            <div className="grid gap-x-10 sm:grid-cols-2">
+              {specs.map(([label, value]) => (
+                <div key={label} className="flex items-center justify-between gap-4 border-b border-cream-100 py-2.5 text-sm">
+                  <span className="text-ink/50">{label}</span>
+                  <span className="text-right font-medium text-ink">{value}</span>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {listing.description && (
-            <p className="mt-4 whitespace-pre-line rounded-card bg-white p-5 text-sm">{listing.description}</p>
+            <section className={`mt-6 ${card}`}>
+              <h2 className="mb-2 font-bold text-ink">Ətraflı</h2>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-ink/80">{listing.description}</p>
+            </section>
           )}
 
           {listing.lat != null && listing.lng != null && (
-            <details className="mt-4">
-              <summary className="cursor-pointer font-semibold text-brand-600">Xəritədə göstər</summary>
+            <section className={`mt-6 ${card}`}>
+              <h2 className="mb-2 font-bold text-ink">Ünvan</h2>
               <iframe
                 title="Xəritə"
-                className="mt-2 h-72 w-full rounded-card border border-cream-200"
+                className="h-72 w-full rounded-lg border border-cream-200"
                 src={`https://www.openstreetmap.org/export/embed.html?bbox=${listing.lng - 0.01}%2C${listing.lat - 0.01}%2C${listing.lng + 0.01}%2C${listing.lat + 0.01}&marker=${listing.lat}%2C${listing.lng}`}
               />
-            </details>
+            </section>
           )}
+
+          <div className="mt-6">
+            <ReviewSection
+              targetType="LISTING"
+              targetId={listing.id}
+              avg={reviewAgg.avg}
+              count={reviewAgg.count}
+              reviews={reviews.map((r) => ({ id: r.id, rating: r.rating, content: r.content, userName: r.user.name, createdAt: r.createdAt.toISOString() }))}
+              canReview={Boolean(session?.user)}
+              isOwner={session?.user?.id === listing.userId}
+              myRating={myReview?.rating}
+              myContent={myReview?.content ?? undefined}
+            />
+          </div>
         </div>
 
-        <aside className="space-y-4">
-          <div className="rounded-card bg-white p-5">
+        {/* RIGHT — sticky */}
+        <aside className="space-y-4 self-start lg:sticky lg:top-20">
+          <div className={card}>
+            {listing.price != null ? (
+              <PriceTag value={Number(listing.price)} className="font-display text-3xl font-extrabold text-ink" />
+            ) : (
+              <span className="text-xl font-bold text-ink">{listingTypeLabel(listing.type)}</span>
+            )}
+            <div className="mt-2 flex items-center gap-2">
+              <ListingBadge type={listing.type} />
+              {listing.featured && (
+                <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-white">Seçilmiş</span>
+              )}
+            </div>
+          </div>
+
+          <div className={`${card} space-y-3`}>
             {business ? (
-              <Link href={`/business/${business.slug}`} className="mb-2 block font-semibold text-brand-700 hover:underline">
+              <Link href={`/business/${business.slug}`} className="flex items-center gap-1 font-semibold text-brand-700 hover:underline">
                 {business.name}
-                <CheckIcon className="ml-1 inline-block size-4 rounded-full bg-teal-500 p-0.5 text-white align-middle" />
+                <CheckIcon className="size-4 rounded-full bg-teal-500 p-0.5 text-white" />
               </Link>
             ) : (
-              <p className="mb-2 font-semibold">{listing.user.name ?? 'İstifadəçi'}</p>
+              <p className="font-semibold text-ink">{listing.user.name ?? 'İstifadəçi'}</p>
             )}
-            <PhoneReveal phone={listing.phone ?? ''} />
+            <PhoneReveal phone={listing.phone ?? ''} block />
             {canMessage && (
-              <form action={startConversationAction} className="mt-3">
+              <form action={startConversationAction}>
                 <input type="hidden" name="listingId" value={listing.id} />
-                <Button type="submit" variant="secondary">
+                <Button type="submit" variant="secondary" className="w-full">
                   Mesaj göndər
                 </Button>
               </form>
             )}
-            <div className="mt-3">
+            <div className="flex items-center justify-between pt-1">
               <FavoriteButton listingId={listing.id} initialFavorited={favorited} />
             </div>
-            <div className="mt-3">
-              <ReportButton targetType="LISTING" targetId={listing.id} />
-            </div>
+            <ReportButton targetType="LISTING" targetId={listing.id} />
           </div>
         </aside>
       </div>
 
-      <div className="mt-8">
-        <ReviewSection
-          targetType="LISTING"
-          targetId={listing.id}
-          avg={reviewAgg.avg}
-          count={reviewAgg.count}
-          reviews={reviews.map((r) => ({ id: r.id, rating: r.rating, content: r.content, userName: r.user.name, createdAt: r.createdAt.toISOString() }))}
-          canReview={Boolean(session?.user)}
-          isOwner={session?.user?.id === listing.userId}
-          myRating={myReview?.rating}
-          myContent={myReview?.content ?? undefined}
-        />
-      </div>
-
       {similar.length > 0 && (
         <section className="mt-10">
-          <h2 className="mb-4 text-xl font-bold text-brand-700">Bənzər elanlar</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <h2 className="mb-4 text-xl font-extrabold text-ink">Bənzər elanlar</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {similar.map((l) => (
               <ListingCard key={l.id} listing={l} />
             ))}
