@@ -6,6 +6,10 @@ import { Button } from '@mypet/ui';
 import { getPetForOwner } from '@/lib/pets/data';
 import { imageVariant } from '@/lib/images';
 import { deletePetAction } from '@/lib/pets/actions';
+import { PassportSection } from './passport-section';
+import { HealthSection, type HealthRecordView } from './health-section';
+
+const toDateStr = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : '');
 
 const SEX_LABEL: Record<string, string> = {
   MALE: 'Erkək',
@@ -22,6 +26,25 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const pet = await getPetForOwner(id, session.user.id);
   if (!pet) notFound();
+
+  const passportView = {
+    documentNo: pet.passport?.documentNo ?? '',
+    issueDate: toDateStr(pet.passport?.issueDate),
+    microchipId: pet.passport?.microchipId ?? '',
+    birthPlace: pet.passport?.birthPlace ?? '',
+    documentImage: pet.passport?.documentImage ?? null,
+    documentImageAlt: pet.passport?.documentImageAlt ?? null,
+  };
+
+  const healthRecords: HealthRecordView[] = pet.healthRecords.map((r) => ({
+    id: r.id,
+    type: r.type,
+    name: r.name,
+    dateStr: toDateStr(r.date),
+    nextDateStr: r.nextDate ? toDateStr(r.nextDate) : null,
+    note: r.note,
+    source: r.source,
+  }));
 
   const staticFields = (pet.staticFields ?? {}) as Record<string, unknown>;
   const dynamicRows = pet.category.fields
@@ -88,6 +111,11 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
       {pet.description && (
         <p className="mt-4 whitespace-pre-line rounded-card bg-white p-5 text-sm">{pet.description}</p>
       )}
+
+      <div className="mt-4 space-y-4">
+        <PassportSection petId={pet.id} passport={passportView} />
+        <HealthSection petId={pet.id} records={healthRecords} />
+      </div>
 
       <form action={deletePetAction} className="mt-8">
         <input type="hidden" name="petId" value={pet.id} />
