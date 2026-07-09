@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export function AdminNav({ counts }: { counts: { listings: number; businesses: number; blog: number; reviews: number } }) {
+export function AdminNav({
+  counts,
+}: {
+  counts: { listings: number; businesses: number; blog: number; reviews: number; reports: number };
+}) {
   const pathname = usePathname();
   const links = [
     { href: '/admin', label: 'İcmal', exact: true, badge: 0 },
@@ -11,6 +15,7 @@ export function AdminNav({ counts }: { counts: { listings: number; businesses: n
     { href: '/admin/businesses', label: 'Bizneslər', badge: counts.businesses },
     { href: '/admin/blog', label: 'Bloq', badge: counts.blog },
     { href: '/admin/reviews', label: 'Rəylər', badge: counts.reviews },
+    { href: '/admin/reports', label: 'Şikayətlər', badge: counts.reports },
     { href: '/admin/transfers', label: 'Köçürmələr', badge: 0 },
     { href: '/admin/users', label: 'İstifadəçilər', badge: 0 },
   ];

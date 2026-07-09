@@ -5,6 +5,7 @@ import { getBusinessBySlug, bumpBusinessView } from '@/lib/business/data';
 import { getActiveListingsByUser } from '@/lib/listings/data';
 import { listReviews, getMyReview } from '@/lib/reviews/data';
 import { ReviewSection } from '@/components/reviews/review-section';
+import { ReportButton } from '@/components/report-button';
 import { parseBusinessHours, isOpenNow, DAYS } from '@/lib/business/hours';
 import { imageVariant } from '@/lib/images';
 import { PhoneReveal } from '@/components/listings/phone-reveal';
@@ -181,6 +182,10 @@ export default async function BusinessStorefront({ params }: { params: Promise<{
           myRating={myReview?.rating}
           myContent={myReview?.content ?? undefined}
         />
+      </div>
+
+      <div className="mt-4">
+        <ReportButton targetType="BUSINESS" targetId={business.id} />
       </div>
     </main>
   );

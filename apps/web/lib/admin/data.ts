@@ -1,13 +1,22 @@
 import { prisma } from '@mypet/db';
 
 export async function pendingCounts() {
-  const [listings, businesses, blog, reviews] = await Promise.all([
+  const [listings, businesses, blog, reviews, reports] = await Promise.all([
     prisma.listing.count({ where: { status: 'PENDING' } }),
     prisma.businessProfile.count({ where: { status: 'PENDING' } }),
     prisma.blogPost.count({ where: { status: 'PENDING' } }),
     prisma.review.count({ where: { status: 'PENDING' } }),
+    prisma.report.count({ where: { status: 'PENDING' } }),
   ]);
-  return { listings, businesses, blog, reviews };
+  return { listings, businesses, blog, reviews, reports };
+}
+
+export function pendingReports() {
+  return prisma.report.findMany({
+    where: { status: 'PENDING' },
+    orderBy: { createdAt: 'asc' },
+    include: { reporter: { select: { name: true, email: true } } },
+  });
 }
 
 export function pendingListings() {

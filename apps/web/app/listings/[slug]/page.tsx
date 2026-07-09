@@ -14,6 +14,7 @@ import { startConversationAction } from '@/lib/messages/actions';
 import { isFavorited } from '@/lib/favorites/data';
 import { listReviews, getReviewAggregate, getMyReview } from '@/lib/reviews/data';
 import { ReviewSection } from '@/components/reviews/review-section';
+import { ReportButton } from '@/components/report-button';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 
@@ -156,6 +157,9 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
             )}
             <div className="mt-3">
               <FavoriteButton listingId={listing.id} initialFavorited={favorited} />
+            </div>
+            <div className="mt-3">
+              <ReportButton targetType="LISTING" targetId={listing.id} />
             </div>
           </div>
         </aside>

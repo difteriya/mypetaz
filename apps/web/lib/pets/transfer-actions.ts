@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@mypet/db';
 import { auth } from '@mypet/auth';
+import { notify } from '@/lib/notifications/service';
 
 export type TransferActionState = { error?: string; ok?: string } | undefined;
 
@@ -56,6 +57,14 @@ export async function transferOwnershipAction(
     }),
     prisma.listing.update({ where: { id: listing.id }, data: { status: 'FINISHED' } }),
   ]);
+
+  await notify({
+    userId: buyer.id,
+    type: 'OWNERSHIP_TRANSFER',
+    message: 'Bir pet sizin adınıza köçürüldü',
+    link: '/pets',
+    email: true,
+  });
 
   revalidatePath('/dashboard/listings');
   revalidatePath('/pets');

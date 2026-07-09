@@ -8,6 +8,7 @@ import {
 } from '@/lib/blog/data';
 import { imageVariant } from '@/lib/images';
 import { BlogPostCard } from '@/components/blog/post-card';
+import { ReportButton } from '@/components/report-button';
 
 // A single [segment] resolves to a category landing OR a post detail — avoids
 // the /blog/[category] vs /blog/[slug] route collision (PLAN.md §8.1/§8.7).
@@ -103,6 +104,10 @@ export default async function BlogSegmentPage({ params }: { params: Promise<{ se
       <article className="mt-6 whitespace-pre-line leading-relaxed text-brand-900/90">
         {post.content}
       </article>
+
+      <div className="mt-6">
+        <ReportButton targetType="BLOG_POST" targetId={post.id} />
+      </div>
     </main>
   );
 }

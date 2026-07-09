@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@mypet/db';
 import { auth } from '@mypet/auth';
+import { notify } from '@/lib/notifications/service';
 
 /** Start (or reopen) a conversation with a listing's seller (PLAN.md §2.6). */
 export async function startConversationAction(formData: FormData): Promise<void> {
@@ -45,7 +46,7 @@ export async function sendMessageAction(_prev: SendState, formData: FormData): P
 
   const convo = await prisma.conversation.findFirst({
     where: { id: conversationId, OR: [{ buyerId: session.user.id }, { sellerId: session.user.id }] },
-    select: { id: true },
+    select: { id: true, buyerId: true, sellerId: true },
   });
   if (!convo) return { error: 'Söhbət tapılmadı' };
 
@@ -53,7 +54,15 @@ export async function sendMessageAction(_prev: SendState, formData: FormData): P
     prisma.message.create({ data: { conversationId: convo.id, senderId: session.user.id, content } }),
     prisma.conversation.update({ where: { id: convo.id }, data: { updatedAt: new Date() } }),
   ]);
-  // NEW_MESSAGE notification is created by the notifications system (step 15).
+
+  // Notify the recipient in-app (email is throttled/opt-in, PLAN.md §2.6).
+  const recipientId = convo.buyerId === session.user.id ? convo.sellerId : convo.buyerId;
+  await notify({
+    userId: recipientId,
+    type: 'NEW_MESSAGE',
+    message: 'Yeni mesajınız var',
+    link: `/messages/${convo.id}`,
+  });
 
   revalidatePath(`/messages/${convo.id}`);
   return undefined;

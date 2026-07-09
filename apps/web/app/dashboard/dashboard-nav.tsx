@@ -9,6 +9,7 @@ const LINKS = [
   { href: '/dashboard/listings', label: 'Elanlarım' },
   { href: '/dashboard/business', label: 'Biznesim' },
   { href: '/messages', label: 'Mesajlar' },
+  { href: '/dashboard/notifications', label: 'Bildirişlər' },
   { href: '/dashboard/blog', label: 'Bloqum' },
   { href: '/dashboard/favorites', label: 'Seçilmişlər' },
   { href: '/dashboard/settings', label: 'Ayarlar' },
