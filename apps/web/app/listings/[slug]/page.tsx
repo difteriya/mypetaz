@@ -12,6 +12,8 @@ import { PhoneReveal } from '@/components/listings/phone-reveal';
 import { FavoriteButton } from '@/components/listings/favorite-button';
 import { startConversationAction } from '@/lib/messages/actions';
 import { isFavorited } from '@/lib/favorites/data';
+import { listReviews, getReviewAggregate, getMyReview } from '@/lib/reviews/data';
+import { ReviewSection } from '@/components/reviews/review-section';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 
@@ -45,6 +47,11 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   const [session, similar] = await Promise.all([auth(), getSimilarListings(listing)]);
   const canMessage = session?.user && session.user.id !== listing.userId;
   const favorited = session?.user ? await isFavorited(session.user.id, listing.id) : false;
+  const [reviewAgg, reviews, myReview] = await Promise.all([
+    getReviewAggregate('LISTING', listing.id),
+    listReviews('LISTING', listing.id),
+    session?.user ? getMyReview(session.user.id, 'LISTING', listing.id) : Promise.resolve(null),
+  ]);
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-8">
@@ -152,6 +159,26 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
         </aside>
+      </div>
+
+      <div className="mt-8">
+        <ReviewSection
+          targetType="LISTING"
+          targetId={listing.id}
+          avg={reviewAgg.avg}
+          count={reviewAgg.count}
+          reviews={reviews.map((r) => ({
+            id: r.id,
+            rating: r.rating,
+            content: r.content,
+            userName: r.user.name,
+            createdAt: r.createdAt.toISOString(),
+          }))}
+          canReview={Boolean(session?.user)}
+          isOwner={session?.user?.id === listing.userId}
+          myRating={myReview?.rating}
+          myContent={myReview?.content ?? undefined}
+        />
       </div>
 
       {similar.length > 0 && (

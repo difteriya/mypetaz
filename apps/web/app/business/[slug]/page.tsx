@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { auth } from '@mypet/auth';
 import { getBusinessBySlug, bumpBusinessView } from '@/lib/business/data';
 import { getActiveListingsByUser } from '@/lib/listings/data';
+import { listReviews, getMyReview } from '@/lib/reviews/data';
+import { ReviewSection } from '@/components/reviews/review-section';
 import { parseBusinessHours, isOpenNow, DAYS } from '@/lib/business/hours';
 import { imageVariant } from '@/lib/images';
 import { PhoneReveal } from '@/components/listings/phone-reveal';
@@ -27,7 +30,12 @@ export default async function BusinessStorefront({ params }: { params: Promise<{
   if (!business) notFound();
 
   await bumpBusinessView(business.id);
-  const listings = await getActiveListingsByUser(business.user.id);
+  const [listings, session, reviews] = await Promise.all([
+    getActiveListingsByUser(business.user.id),
+    auth(),
+    listReviews('BUSINESS', business.id),
+  ]);
+  const myReview = session?.user ? await getMyReview(session.user.id, 'BUSINESS', business.id) : null;
 
   const hours = parseBusinessHours(business.businessHours);
   const { open } = isOpenNow(hours);
@@ -155,10 +163,25 @@ export default async function BusinessStorefront({ params }: { params: Promise<{
         </section>
       )}
 
-      {/* Reviews arrive in step 13 */}
-      <section className="mt-8 rounded-card bg-white p-5 text-sm text-brand-900/50">
-        Rəylər tezliklə əlavə olunacaq.
-      </section>
+      <div className="mt-8">
+        <ReviewSection
+          targetType="BUSINESS"
+          targetId={business.id}
+          avg={business.avgRating}
+          count={business.reviewCount}
+          reviews={reviews.map((r) => ({
+            id: r.id,
+            rating: r.rating,
+            content: r.content,
+            userName: r.user.name,
+            createdAt: r.createdAt.toISOString(),
+          }))}
+          canReview={Boolean(session?.user)}
+          isOwner={session?.user?.id === business.user.id}
+          myRating={myReview?.rating}
+          myContent={myReview?.content ?? undefined}
+        />
+      </div>
     </main>
   );
 }
