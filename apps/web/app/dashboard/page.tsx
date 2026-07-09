@@ -34,6 +34,9 @@ export default async function DashboardPage() {
         <Link href="/dashboard/listings">
           <Button variant="secondary">Mənim elanlarım</Button>
         </Link>
+        <Link href="/dashboard/business">
+          <Button variant="secondary">Biznesim</Button>
+        </Link>
         <form action={logoutAction}>
           <Button type="submit" variant="secondary">
             Çıxış

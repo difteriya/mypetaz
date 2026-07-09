@@ -19,6 +19,9 @@ export default async function HomePage() {
           <Link href="/listings">
             <Button>Elanlara bax</Button>
           </Link>
+          <Link href="/businesses">
+            <Button variant="secondary">Bizneslər</Button>
+          </Link>
           {session?.user ? (
             <Link href="/dashboard">
               <Button variant="secondary">İdarə paneli</Button>

@@ -121,6 +121,15 @@ export function getSimilarListings(listing: {
   });
 }
 
+/** A business's public listings (for the storefront, PLAN.md §2.7). */
+export function getActiveListingsByUser(userId: string) {
+  return prisma.listing.findMany({
+    where: { userId, status: 'ACTIVE' },
+    include: cardInclude,
+    orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
+  });
+}
+
 export function listMyListings(userId: string) {
   return prisma.listing.findMany({
     where: { userId },

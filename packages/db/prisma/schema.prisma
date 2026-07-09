@@ -240,6 +240,7 @@ model BusinessProfile {
   lng             Float?
   phone           String?
   businessHours   Json? // { mon: {open,close}, ... } — open/closed live status
+  socialLinks     Json? // { instagram, facebook, tiktok, website } (PLAN.md §2.7)
   viewCount       Int           @default(0)
   avgRating       Float? // cache, recomputed on Review approval (PLAN.md §2.4)
   reviewCount     Int           @default(0)
