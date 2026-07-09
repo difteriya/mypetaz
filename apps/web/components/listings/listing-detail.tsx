@@ -19,6 +19,7 @@ import { JsonLd, APP_URL } from '@/components/json-ld';
 import { PawIcon, CheckIcon, StarRating } from '@/components/icons';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
+const HEALTH_LABEL: Record<string, string> = { VACCINE: 'Peyvənd', EXAM: 'Müayinə', SURGERY: 'Əməliyyat' };
 const card = 'rounded-card bg-white p-5 ring-1 ring-cream-200';
 
 export async function ListingDetailView({ slug }: { slug: string }) {
@@ -135,6 +136,50 @@ export async function ListingDetailView({ slug }: { slug: string }) {
               ))}
             </div>
           </section>
+
+          {(pet.passport || pet.healthRecords.length > 0) && (
+            <section className={`mt-6 ${card}`}>
+              <h2 className="mb-3 font-bold text-ink">Pasport və tibbi göstəricilər</h2>
+
+              {pet.passport && (
+                <div className="grid gap-x-10 sm:grid-cols-2">
+                  {(
+                    [
+                      ['Sənəd №', pet.passport.documentNo],
+                      ['Mikroçip', pet.passport.microchipId],
+                      ['Doğulduğu yer', pet.passport.birthPlace],
+                      ['Verilmə tarixi', pet.passport.issueDate?.toISOString().slice(0, 10)],
+                    ] as Array<[string, string | null | undefined]>
+                  )
+                    .filter(([, v]) => v)
+                    .map(([label, value]) => (
+                      <div key={label} className="flex items-center justify-between gap-4 border-b border-cream-100 py-2.5 text-sm">
+                        <span className="text-ink/50">{label}</span>
+                        <span className="text-right font-medium text-ink">{value}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              {pet.healthRecords.length > 0 && (
+                <ul className="mt-4 space-y-2">
+                  {pet.healthRecords.map((r) => (
+                    <li key={r.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-cream-100 p-3 text-sm">
+                      <span className="rounded-full bg-cream-200 px-2 py-0.5 text-xs font-semibold">
+                        {HEALTH_LABEL[r.type] ?? r.type}
+                      </span>
+                      <span className="font-medium text-ink">{r.name}</span>
+                      <span className="text-ink/50">{r.date.toISOString().slice(0, 10)}</span>
+                      {r.nextDate && <span className="text-ink/40">· növbəti: {r.nextDate.toISOString().slice(0, 10)}</span>}
+                      <span className={`ml-auto text-xs ${r.source === 'VET' ? 'text-teal-600' : 'text-ink/40'}`}>
+                        {r.source === 'VET' ? 'Baytar' : 'Özüm'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
 
           {listing.description && (
             <section className={`mt-6 ${card}`}>

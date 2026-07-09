@@ -95,6 +95,8 @@ export function getListingBySlug(slug: string) {
           images: { orderBy: { order: 'asc' } },
           category: { include: { fields: { where: { active: true }, orderBy: { order: 'asc' } } } },
           breed: true,
+          passport: true,
+          healthRecords: { orderBy: { date: 'desc' } },
         },
       },
       city: true,
