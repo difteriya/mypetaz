@@ -40,6 +40,7 @@ const providers: Provider[] = [
       const { email, password } = parsed.data;
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user?.passwordHash) return null;
+      if (user.blocked) return null; // blocked users can't sign in (PLAN.md §2.9)
 
       const valid = await verifyPassword(password, user.passwordHash);
       if (!valid) return null;

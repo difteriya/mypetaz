@@ -154,6 +154,7 @@ model User {
   passwordHash  String? // null for social-only logins (see PLAN.md §2.8)
   role          Role        @default(USER)
   accountType   AccountType @default(INDIVIDUAL)
+  blocked       Boolean     @default(false) // admin block (PLAN.md §2.9)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
