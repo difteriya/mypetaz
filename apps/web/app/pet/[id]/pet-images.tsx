@@ -41,6 +41,7 @@ export function PetImages({ petId, images }: { petId: string; images: Img[] }) {
       )}
 
       <form action={formAction} className="mt-3 flex flex-wrap items-center gap-2">
+        <input type="hidden" name="petId" value={petId} />
         <input
           type="file"
           name="images"
