@@ -4,12 +4,13 @@ import {
   getFeaturedListings,
   getLatestListings,
   getCategoriesWithBreeds,
-  getPublicCounts,
 } from '@/lib/listings/data';
 import { getBlockMap } from '@/lib/cms/data';
 import { imageVariant } from '@/lib/images';
 import { ListingCard } from '@/components/listings/listing-card';
 import { JsonLd, APP_URL } from '@/components/json-ld';
+import { LISTING_TYPES } from '@/lib/listings/schema';
+import { listingTypeLabel } from '@/components/listings/listing-badge';
 
 const TILE_TONES = [
   'bg-brand-100 text-brand-800',
@@ -22,15 +23,16 @@ const TILE_TONES = [
 ];
 
 export default async function HomePage() {
-  const [featured, latest, categories, counts, home] = await Promise.all([
+  const [featured, latest, categories, home] = await Promise.all([
     getFeaturedListings(),
     getLatestListings(8),
     getCategoriesWithBreeds(),
-    getPublicCounts(),
     getBlockMap('HOME'),
   ]);
-  const heroImage = home.get('hero_image');
-  const onImage = heroImage.startsWith('/uploads/');
+  const leftImg = home.get('hero_left_image');
+  const rightImg = home.get('hero_right_image');
+  const fieldLabel = 'mb-1 block text-xs font-bold text-ink/60';
+  const fieldBox = 'w-full rounded-xl border border-cream-200 bg-white px-3 py-2.5 text-ink outline-none focus:border-brand-400';
 
   return (
     <main className="px-4 py-8">
@@ -38,69 +40,76 @@ export default async function HomePage() {
         data={{ '@context': 'https://schema.org', '@type': 'Organization', name: 'mypet.az', url: APP_URL }}
       />
 
-      {/* Hero */}
-      <section className="relative isolate overflow-hidden rounded-[2.5rem] px-6 py-16 sm:py-24">
-        {onImage ? (
-          <>
-            <img src={imageVariant(heroImage, 'full')} alt="" className="absolute inset-0 -z-10 size-full object-cover" />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-tr from-black/65 via-black/35 to-transparent" />
-          </>
-        ) : (
-          <>
-            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-100 via-cream-100 to-teal-50" />
-            <div className="absolute -right-16 -top-16 -z-10 size-72 rounded-full bg-brand-200/50 blur-3xl" />
-            <div className="absolute -bottom-20 -left-10 -z-10 size-72 rounded-full bg-teal-100/60 blur-3xl" />
-          </>
+      {/* Hero — full-bleed band with lifestyle images left & right */}
+      <section className="relative left-1/2 -mt-8 w-screen -translate-x-1/2 overflow-hidden bg-gradient-to-b from-cream-200 to-cream-50">
+        <div className="pointer-events-none absolute -right-24 top-0 size-[26rem] rounded-full bg-white/50" />
+        {leftImg && (
+          <img
+            src={imageVariant(leftImg, 'detail')}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 left-0 hidden h-[92%] w-auto object-contain lg:block"
+          />
+        )}
+        {rightImg && (
+          <img
+            src={imageVariant(rightImg, 'detail')}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 right-0 hidden h-[92%] w-auto object-contain lg:block"
+          />
         )}
 
-        <div className={`max-w-2xl ${onImage ? 'text-white' : 'text-ink'}`}>
-          <span className={`text-sm font-bold uppercase tracking-wider ${onImage ? 'text-white/80' : 'text-brand-600'}`}>
-            Azərbaycanın pet portalı
+        <div className="relative z-10 mx-auto max-w-3xl px-4 py-14 text-center sm:py-20">
+          <span className="text-sm font-bold uppercase tracking-wider text-teal-500">
+            Ev Heyvanları Üçün Yeni Nəsil Platforma.
           </span>
-          <h1 className="mt-3 text-4xl font-extrabold leading-tight sm:text-6xl">
-            {home.get('hero_title', 'Sənə yeni dost tapaq')}
+          <h1 className="mt-3 text-4xl font-extrabold text-ink sm:text-6xl">
+            {home.get('hero_title', 'Bir Pati Min Xoşbəxtlik')}
           </h1>
-          <p className={`mt-4 max-w-lg text-lg ${onImage ? 'text-white/90' : 'text-ink/70'}`}>
-            {home.get('hero_subtitle', 'Elanlar, sahiblənmə, baytar və pet bizneslər — hamısı bir yerdə.')}
-          </p>
 
-          {/* Search pill */}
+          {/* Search card */}
           <form
             action="/listings"
             method="get"
-            className="mt-7 flex flex-col gap-2 rounded-3xl bg-white p-2 shadow-soft sm:flex-row sm:items-center sm:rounded-full"
+            className="mx-auto mt-8 grid max-w-2xl gap-3 rounded-2xl bg-white p-4 text-left shadow-soft sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end"
           >
-            <input
-              name="q"
-              placeholder="Nə axtarırsınız? (məs. Golden Retriever)"
-              className="min-w-0 flex-1 rounded-full px-4 py-2.5 text-ink outline-none"
-            />
-            <select name="categoryId" defaultValue="" className="rounded-full px-4 py-2.5 text-ink/80 outline-none">
-              <option value="">Bütün kateqoriyalar</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <Button type="submit">Axtar</Button>
+            <div>
+              <label htmlFor="h-cat" className={fieldLabel}>
+                Kateqoriya
+              </label>
+              <select id="h-cat" name="categoryId" defaultValue="" className={fieldBox}>
+                <option value="">Kateqoriya seçin</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="h-type" className={fieldLabel}>
+                Tip
+              </label>
+              <select id="h-type" name="type" defaultValue="" className={fieldBox}>
+                <option value="">Tipi seçin</option>
+                {LISTING_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {listingTypeLabel(t)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="h-q" className={fieldLabel}>
+                Açar söz
+              </label>
+              <input id="h-q" name="q" placeholder="Açar sözlərinizi daxil edin…" className={fieldBox} />
+            </div>
+            <Button type="submit" className="h-[42px]">
+              Axtar
+            </Button>
           </form>
-
-          {/* Stat strip */}
-          <dl className={`mt-6 flex gap-8 text-sm ${onImage ? 'text-white/90' : 'text-ink/70'}`}>
-            <div>
-              <dt className="text-2xl font-extrabold">{counts.listings}</dt>
-              <dd>elan</dd>
-            </div>
-            <div>
-              <dt className="text-2xl font-extrabold">{counts.businesses}</dt>
-              <dd>biznes</dd>
-            </div>
-            <div>
-              <dt className="text-2xl font-extrabold">{counts.posts}</dt>
-              <dd>bloq yazısı</dd>
-            </div>
-          </dl>
         </div>
       </section>
 
