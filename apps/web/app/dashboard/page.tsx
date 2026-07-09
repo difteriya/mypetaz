@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
@@ -26,11 +27,16 @@ export default async function DashboardPage() {
         <dd>{accountType}</dd>
       </dl>
 
-      <form action={logoutAction} className="mt-6">
-        <Button type="submit" variant="secondary">
-          Çıxış
-        </Button>
-      </form>
+      <div className="mt-6 flex gap-3">
+        <Link href="/pets">
+          <Button>Mənim petlərim</Button>
+        </Link>
+        <form action={logoutAction}>
+          <Button type="submit" variant="secondary">
+            Çıxış
+          </Button>
+        </form>
+      </div>
     </main>
   );
 }
