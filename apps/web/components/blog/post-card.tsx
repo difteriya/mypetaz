@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { imageVariant } from '@/lib/images';
 import type { BlogListItem } from '@/lib/blog/data';
+import { PawIcon } from '@/components/icons';
 
 export function BlogPostCard({ post }: { post: BlogListItem }) {
   return (
@@ -20,7 +21,7 @@ export function BlogPostCard({ post }: { post: BlogListItem }) {
             className="size-full object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-4xl">📝</div>
+          <div className="flex size-full items-center justify-center"><PawIcon className="size-10 text-brand-200" /></div>
         )}
       </div>
       <div className="space-y-1 p-4">

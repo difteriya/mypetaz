@@ -76,7 +76,7 @@ export function PassportSection({ petId, passport }: { petId: string; passport: 
         </div>
 
         {state?.error && <p className="text-sm text-badge-lostfound">{state.error}</p>}
-        {state?.ok && <p className="text-sm text-badge-sale">Yadda saxlanıldı ✓</p>}
+        {state?.ok && <p className="text-sm text-badge-sale">Yadda saxlanıldı</p>}
 
         <Button type="submit" disabled={pending}>
           {pending ? 'Saxlanılır…' : 'Pasportu saxla'}

@@ -1,5 +1,6 @@
 import { pendingReviews } from '@/lib/admin/data';
 import { approveReviewAction, rejectReviewAction } from '@/lib/admin/actions';
+import { StarRating } from '@/components/icons';
 
 const TARGET_LABEL: Record<string, string> = { LISTING: 'Elan', BUSINESS: 'Biznes' };
 
@@ -16,7 +17,7 @@ export default async function AdminReviewsPage() {
           {pending.map((r) => (
             <li key={r.id} className="rounded-card bg-white p-4">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-amber-500">{'★'.repeat(r.rating)}</span>
+                <StarRating value={r.rating} />
                 <span className="text-xs text-brand-900/50">
                   {TARGET_LABEL[r.targetType]}: {r.targetLabel} · {r.user.name ?? 'İstifadəçi'}
                 </span>

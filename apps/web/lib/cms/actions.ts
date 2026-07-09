@@ -28,6 +28,7 @@ export async function upsertContentBlockAction(fd: FormData): Promise<void> {
   if (type === 'IMAGE') {
     const file = fd.get('image');
     if (file instanceof File && file.size > 0) {
+      if (file.size > 5 * 1024 * 1024) return; // admin limit: 5 MB
       value = (await processImage(file, 'cms', key)).stem;
     }
   }

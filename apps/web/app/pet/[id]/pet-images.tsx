@@ -4,6 +4,7 @@ import { useActionState } from 'react';
 import { Button } from '@mypet/ui';
 import { imageVariant } from '@/lib/images';
 import { addPetImagesAction, deletePetImageAction } from '@/lib/pets/actions';
+import { PawIcon, CloseIcon } from '@/components/icons';
 
 interface Img {
   id: string;
@@ -26,17 +27,17 @@ export function PetImages({ petId, images }: { petId: string; images: Img[] }) {
                 <button
                   type="submit"
                   title="Sil"
-                  className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-badge-lostfound shadow"
+                  className="rounded-full bg-white/90 p-1 text-badge-lostfound shadow"
                 >
-                  ✕
+                  <CloseIcon className="size-3.5" />
                 </button>
               </form>
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex aspect-video items-center justify-center rounded-card bg-cream-100 text-6xl text-brand-200">
-          🐾
+        <div className="flex aspect-video items-center justify-center rounded-card bg-cream-100">
+          <PawIcon className="size-16 text-brand-200" />
         </div>
       )}
 

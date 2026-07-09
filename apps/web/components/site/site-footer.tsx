@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PawIcon } from '@/components/icons';
 
 export function SiteFooter({ footer }: { footer: Record<string, string> }) {
   const social = [
@@ -10,7 +11,9 @@ export function SiteFooter({ footer }: { footer: Record<string, string> }) {
     <footer className="w-full border-t border-cream-200 bg-white">
       <div className="mx-auto grid max-w-[1280px] gap-6 px-4 py-8 text-sm text-brand-900/60 sm:grid-cols-3">
         <div>
-          <p className="text-lg font-bold text-brand-700">🐾 mypet.az</p>
+          <p className="flex items-center gap-1.5 text-lg font-bold text-brand-700">
+            <PawIcon className="size-5" /> mypet.az
+          </p>
           <p className="mt-2">Azərbaycanda ev heyvanları üçün portal.</p>
         </div>
         <div className="space-y-1">

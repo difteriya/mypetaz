@@ -3,6 +3,7 @@ import { imageVariant } from '@/lib/images';
 import type { ListingCard as ListingCardData } from '@/lib/listings/data';
 import { ListingBadge } from './listing-badge';
 import { PriceTag } from './price-tag';
+import { PawIcon } from '@/components/icons';
 
 export function ListingCard({ listing }: { listing: ListingCardData }) {
   const cover = listing.pet.images[0];
@@ -25,17 +26,16 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
             className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-4xl text-brand-200">🐾</div>
+          <div className="flex size-full items-center justify-center">
+            <PawIcon className="size-12 text-brand-200" />
+          </div>
         )}
         <div className="absolute left-2.5 top-2.5">
           <ListingBadge type={listing.type} />
         </div>
         {listing.featured && (
-          <span
-            title="Seçilmiş"
-            className="absolute right-2.5 top-2.5 rounded-full bg-white/95 px-2 py-0.5 text-sm text-amber-500 shadow"
-          >
-            ★
+          <span className="absolute right-2.5 top-2.5 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-white shadow">
+            Seçilmiş
           </span>
         )}
       </div>

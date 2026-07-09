@@ -50,7 +50,7 @@ export default async function AdminListingsPage() {
           {active.map((l) => (
             <li key={l.id} className="flex items-center justify-between gap-3 p-3 text-sm">
               <Link href={`/listings/${l.slug}`} className="truncate hover:underline">
-                {l.featured ? '★ ' : ''}
+                {l.featured ? '(seçilmiş) ' : ''}
                 {l.title}
               </Link>
               <form action={toggleFeaturedAction}>

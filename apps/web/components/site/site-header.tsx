@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@mypet/ui';
+import { PawIcon } from '@/components/icons';
 
 // Auth is checked client-side so the root layout stays static/ISR-friendly
 // (public pages don't depend on the session — PLAN.md §8.5).
@@ -24,7 +25,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-30 w-full border-b border-cream-200 bg-cream-50/90 backdrop-blur">
       <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="flex items-center gap-1.5 font-display text-xl font-extrabold text-brand-600">
-          <span aria-hidden>🐾</span> mypet<span className="text-teal-500">.az</span>
+          <PawIcon className="size-6" /> mypet<span className="text-teal-500">.az</span>
         </Link>
 
         <nav className="hidden gap-6 text-[0.95rem] font-semibold sm:flex">

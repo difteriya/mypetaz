@@ -7,6 +7,7 @@ import { listReviews, getMyReview } from '@/lib/reviews/data';
 import { ReviewSection } from '@/components/reviews/review-section';
 import { ReportButton } from '@/components/report-button';
 import { JsonLd, APP_URL } from '@/components/json-ld';
+import { PawIcon, CheckIcon, StarRating } from '@/components/icons';
 import { parseBusinessHours, isOpenNow, DAYS } from '@/lib/business/hours';
 import { imageVariant } from '@/lib/images';
 import { PhoneReveal } from '@/components/listings/phone-reveal';
@@ -68,26 +69,33 @@ export default async function BusinessStorefront({ params }: { params: Promise<{
           {business.banner ? (
             <img src={imageVariant(business.banner, 'detail')} alt={business.bannerAlt ?? business.name} className="size-full object-cover" />
           ) : (
-            <div className="flex size-full items-center justify-center text-5xl">🐾</div>
+            <div className="flex size-full items-center justify-center"><PawIcon className="size-16 text-brand-200" /></div>
           )}
         </div>
         <div className="absolute -bottom-8 left-6 size-20 overflow-hidden rounded-card border-4 border-white bg-cream-100">
           {business.logo ? (
             <img src={imageVariant(business.logo, 'thumb')} alt={business.logoAlt ?? business.name} className="size-full object-cover" />
           ) : (
-            <div className="flex size-full items-center justify-center text-2xl">🏪</div>
+            <div className="flex size-full items-center justify-center"><PawIcon className="size-8 text-brand-200" /></div>
           )}
         </div>
       </div>
 
       <div className="mt-10 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-brand-700">
-            {business.name} <span className="text-blue-500" title="Təsdiqlənmiş Biznes">✓</span>
+          <h1 className="flex items-center gap-1.5 text-2xl font-bold text-brand-700">
+            {business.name}
+            <CheckIcon className="size-5 rounded-full bg-teal-500 p-1 text-white" />
           </h1>
-          <p className="mt-1 text-sm text-brand-900/60">
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-brand-900/60">
             {listings.length} elan · {business.viewCount} baxış ·{' '}
-            {business.reviewCount > 0 ? `★ ${business.avgRating?.toFixed(1)} (${business.reviewCount})` : 'Rəy yoxdur'}
+            {business.reviewCount > 0 ? (
+              <>
+                <StarRating value={business.avgRating ?? 0} /> {business.avgRating?.toFixed(1)} ({business.reviewCount})
+              </>
+            ) : (
+              'Rəy yoxdur'
+            )}
           </p>
           {categories.length > 0 && (
             <p className="mt-1 text-xs text-brand-900/50">{categories.join(' · ')}</p>

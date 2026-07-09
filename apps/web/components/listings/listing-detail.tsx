@@ -15,6 +15,7 @@ import { listReviews, getReviewAggregate, getMyReview } from '@/lib/reviews/data
 import { ReviewSection } from '@/components/reviews/review-section';
 import { ReportButton } from '@/components/report-button';
 import { JsonLd, APP_URL } from '@/components/json-ld';
+import { PawIcon, CheckIcon } from '@/components/icons';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 
@@ -28,7 +29,7 @@ export async function ListingDetailView({ slug }: { slug: string }) {
     if (!existing) notFound();
     return (
       <main className="mx-auto max-w-xl px-4 py-16 text-center">
-        <p className="text-4xl">🐾</p>
+        <PawIcon className="mx-auto size-12 text-brand-200" />
         <h1 className="mt-3 text-2xl font-bold text-brand-700">Bu elan artıq mövcud deyil</h1>
         <p className="mt-2 text-brand-900/60">Elan bağlanıb və ya silinib.</p>
         <Link href="/listings" className="mt-4 inline-block font-semibold text-brand-600 hover:underline">
@@ -106,14 +107,16 @@ export async function ListingDetailView({ slug }: { slug: string }) {
               ))}
             </div>
           ) : (
-            <div className="flex aspect-video items-center justify-center rounded-card bg-cream-100 text-6xl text-brand-200">
-              🐾
+            <div className="flex aspect-video items-center justify-center rounded-card bg-cream-100">
+              <PawIcon className="size-16 text-brand-200" />
             </div>
           )}
 
           <div className="mt-4 flex items-center gap-2">
             <ListingBadge type={listing.type} />
-            {listing.featured && <span className="text-amber-500">★ Seçilmiş</span>}
+            {listing.featured && (
+              <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-white">Seçilmiş</span>
+            )}
           </div>
 
           <h1 className="mt-2 text-2xl font-bold text-brand-700">{listing.title}</h1>
@@ -164,7 +167,8 @@ export async function ListingDetailView({ slug }: { slug: string }) {
           <div className="rounded-card bg-white p-5">
             {business ? (
               <Link href={`/business/${business.slug}`} className="mb-2 block font-semibold text-brand-700 hover:underline">
-                {business.name} <span className="text-blue-500" title="Təsdiqlənmiş Biznes">✓</span>
+                {business.name}
+                <CheckIcon className="ml-1 inline-block size-4 rounded-full bg-teal-500 p-0.5 text-white align-middle" />
               </Link>
             ) : (
               <p className="mb-2 font-semibold">{listing.user.name ?? 'İstifadəçi'}</p>

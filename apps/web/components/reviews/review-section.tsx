@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@mypet/ui';
 import { submitReviewAction } from '@/lib/reviews/actions';
+import { StarRating, StarIcon } from '@/components/icons';
 
 export interface ReviewView {
   id: string;
@@ -13,14 +14,7 @@ export interface ReviewView {
   createdAt: string;
 }
 
-function Stars({ value }: { value: number }) {
-  return (
-    <span className="text-amber-500">
-      {'★'.repeat(Math.round(value))}
-      <span className="text-brand-900/20">{'★'.repeat(5 - Math.round(value))}</span>
-    </span>
-  );
-}
+const Stars = StarRating;
 
 export function ReviewSection({
   targetType,
@@ -88,16 +82,10 @@ export function ReviewSection({
           <input type="hidden" name="targetId" value={targetId} />
           <input type="hidden" name="rating" value={rating} />
           <p className="text-sm font-medium">Rəy yaz</p>
-          <div className="flex gap-1 text-2xl">
+          <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setRating(n)}
-                className={n <= rating ? 'text-amber-500' : 'text-brand-900/20'}
-                aria-label={`${n} ulduz`}
-              >
-                ★
+              <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} ulduz`}>
+                <StarIcon className={`size-7 ${n <= rating ? 'text-amber-400' : 'text-cream-300'}`} />
               </button>
             ))}
           </div>

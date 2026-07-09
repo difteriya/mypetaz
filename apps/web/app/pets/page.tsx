@@ -5,6 +5,7 @@ import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
 import { listMyPets, getMyTransfersArchive } from '@/lib/pets/data';
 import { imageVariant } from '@/lib/images';
+import { PawIcon } from '@/components/icons';
 
 export const metadata: Metadata = { title: 'Mənim petlərim' };
 
@@ -28,7 +29,7 @@ export default async function MyPetsPage() {
 
       {pets.length === 0 ? (
         <div className="rounded-card border border-dashed border-cream-200 bg-white p-10 text-center text-brand-900/60">
-          <p className="text-3xl">🐾</p>
+          <PawIcon className="mx-auto size-10 text-brand-200" />
           <p className="mt-2">Hələ heç bir petiniz yoxdur.</p>
           <Link href="/pets/new" className="mt-3 inline-block font-semibold text-brand-600 hover:underline">
             İlk petinizi əlavə edin
@@ -54,8 +55,8 @@ export default async function MyPetsPage() {
                       className="size-full object-cover"
                     />
                   ) : (
-                    <div className="flex size-full items-center justify-center text-4xl text-brand-200">
-                      🐾
+                    <div className="flex size-full items-center justify-center">
+                      <PawIcon className="size-10 text-brand-200" />
                     </div>
                   )}
                 </div>

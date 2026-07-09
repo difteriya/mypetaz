@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { imageVariant } from '@/lib/images';
 import type { BusinessListItem } from '@/lib/business/data';
+import { PawIcon, CheckIcon } from '@/components/icons';
 
 export function BusinessCard({ business }: { business: BusinessListItem }) {
   const categories = business.serviceCategories.map((s) => s.serviceCategory.name);
@@ -21,12 +22,15 @@ export function BusinessCard({ business }: { business: BusinessListItem }) {
             className="size-full object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-2xl">🏪</div>
+          <div className="flex size-full items-center justify-center">
+            <PawIcon className="size-7 text-brand-200" />
+          </div>
         )}
       </div>
       <div className="min-w-0">
-        <p className="truncate font-semibold text-brand-700">
-          {business.name} <span className="text-blue-500" title="Təsdiqlənmiş Biznes">✓</span>
+        <p className="flex items-center gap-1 truncate font-semibold text-brand-700">
+          {business.name}
+          <CheckIcon className="size-4 shrink-0 rounded-full bg-teal-500 p-0.5 text-white" />
         </p>
         {business.city && <p className="text-sm text-brand-900/60">{business.city.name}</p>}
         {categories.length > 0 && (

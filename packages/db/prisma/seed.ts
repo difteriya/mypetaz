@@ -270,11 +270,11 @@ async function main() {
   for (const cat of CATEGORIES) {
     const category = await prisma.petCategory.upsert({
       where: { slug: cat.slug },
-      update: { name: cat.name, emoji: cat.emoji, order: cat.order, freeTextBreed: !!cat.freeTextBreed },
+      update: { name: cat.name, emoji: null, order: cat.order, freeTextBreed: !!cat.freeTextBreed },
       create: {
         slug: cat.slug,
         name: cat.name,
-        emoji: cat.emoji,
+        emoji: null,
         order: cat.order,
         freeTextBreed: !!cat.freeTextBreed,
       },

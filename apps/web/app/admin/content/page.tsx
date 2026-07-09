@@ -1,6 +1,7 @@
 import { getAllBlocks } from '@/lib/cms/data';
 import { upsertContentBlockAction, deleteContentBlockAction } from '@/lib/cms/actions';
 import { imageVariant } from '@/lib/images';
+import { AdminImageInput } from '@/components/admin/image-upload';
 
 const PAGES = ['HOME', 'ABOUT', 'CONTACT', 'FOOTER', 'GLOBAL'] as const;
 const TYPES = ['TEXT', 'RICHTEXT', 'IMAGE', 'URL'] as const;
@@ -37,7 +38,8 @@ export default async function AdminContentPage() {
                       {b.value && b.value.startsWith('/uploads/') && (
                         <img src={imageVariant(b.value, 'thumb')} alt={b.key} className="size-12 rounded object-cover" />
                       )}
-                      <input type="file" name="image" accept="image/*" className="text-sm" />
+                      <AdminImageInput />
+                      <span className="text-xs text-ink/40">maks. 5 MB</span>
                     </div>
                   ) : b.type === 'RICHTEXT' ? (
                     <textarea name="value" rows={3} defaultValue={b.value} className={inputClass} />
