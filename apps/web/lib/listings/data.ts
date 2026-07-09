@@ -178,6 +178,15 @@ export function getListingStatusBySlug(slug: string) {
   return prisma.listing.findUnique({ where: { slug }, select: { status: true } });
 }
 
+export async function getPublicCounts() {
+  const [listings, businesses, posts] = await Promise.all([
+    prisma.listing.count({ where: { status: 'ACTIVE' } }),
+    prisma.businessProfile.count({ where: { status: 'ACTIVE' } }),
+    prisma.blogPost.count({ where: { status: 'ACTIVE' } }),
+  ]);
+  return { listings, businesses, posts };
+}
+
 export function getCitiesList() {
   return prisma.city.findMany({ orderBy: { order: 'asc' } });
 }

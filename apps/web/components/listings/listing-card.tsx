@@ -18,6 +18,10 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
           <img
             src={imageVariant(cover.url, 'card')}
             alt={cover.alt}
+            width={400}
+            height={400}
+            loading="lazy"
+            decoding="async"
             className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (

@@ -11,7 +11,15 @@ export function BusinessCard({ business }: { business: BusinessListItem }) {
     >
       <div className="size-16 shrink-0 overflow-hidden rounded-lg bg-cream-100">
         {business.logo ? (
-          <img src={imageVariant(business.logo, 'thumb')} alt={business.logoAlt ?? business.name} className="size-full object-cover" />
+          <img
+            src={imageVariant(business.logo, 'thumb')}
+            alt={business.logoAlt ?? business.name}
+            width={64}
+            height={64}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover"
+          />
         ) : (
           <div className="flex size-full items-center justify-center text-2xl">🏪</div>
         )}

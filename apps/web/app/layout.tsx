@@ -22,6 +22,7 @@ const body = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.APP_URL ?? 'https://mypet.az'),
   title: {
     default: 'mypet.az — Azərbaycanda heyvanlar üçün portal',
     template: '%s | mypet.az',

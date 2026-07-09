@@ -10,7 +10,15 @@ export function BlogPostCard({ post }: { post: BlogListItem }) {
     >
       <div className="aspect-[16/9] bg-cream-100">
         {post.coverImage ? (
-          <img src={imageVariant(post.coverImage, 'card')} alt={post.coverAlt ?? post.title} className="size-full object-cover" />
+          <img
+            src={imageVariant(post.coverImage, 'card')}
+            alt={post.coverAlt ?? post.title}
+            width={400}
+            height={225}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover"
+          />
         ) : (
           <div className="flex size-full items-center justify-center text-4xl">📝</div>
         )}

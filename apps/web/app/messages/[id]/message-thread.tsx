@@ -37,9 +37,11 @@ export function MessageThread({
     }
   }, [conversationId]);
 
-  // Poll every 4s (PLAN.md §2.6).
+  // Poll every 4s, but skip while the tab is hidden (PLAN.md §2.6).
   useEffect(() => {
-    const t = setInterval(refetch, 4000);
+    const t = setInterval(() => {
+      if (document.visibilityState === 'visible') refetch();
+    }, 4000);
     return () => clearInterval(t);
   }, [refetch]);
 
