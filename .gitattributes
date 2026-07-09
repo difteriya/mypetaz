@@ -11,6 +11,8 @@
 *.pdf binary
 *.woff binary
 *.woff2 binary
+*.ttf binary
+*.otf binary
 
 # Lockfile: keep as-is, mark generated in diffs.
 pnpm-lock.yaml -diff linguist-generated
