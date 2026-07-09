@@ -106,8 +106,8 @@ export async function ListingDetailView({ slug }: { slug: string }) {
               ))}
             </div>
           ) : (
-            <div className="flex aspect-video items-center justify-center rounded-card bg-cream-100 text-6xl">
-              {pet.category.emoji}
+            <div className="flex aspect-video items-center justify-center rounded-card bg-cream-100 text-6xl text-brand-200">
+              🐾
             </div>
           )}
 
@@ -124,7 +124,7 @@ export async function ListingDetailView({ slug }: { slug: string }) {
           <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-card bg-white p-5 text-sm">
             {(
               [
-                ['Kateqoriya', `${pet.category.emoji ?? ''} ${pet.category.name}`.trim()],
+                ['Kateqoriya', pet.category.name],
                 ['Cins/növ', pet.breed?.name ?? pet.breedFreeText ?? '—'],
                 ['Cinsiyyət', SEX_LABEL[pet.sex] ?? pet.sex],
                 ...(listing.city ? [['Şəhər', listing.city.name] as [string, string]] : []),

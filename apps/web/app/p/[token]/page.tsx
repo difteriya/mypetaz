@@ -51,7 +51,7 @@ export default async function SharedPassportPage({ params }: { params: Promise<{
             )}
             <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
               <dt className="text-brand-900/50">Kateqoriya</dt>
-              <dd>{`${pet.category.emoji ?? ''} ${pet.category.name}`.trim()}</dd>
+              <dd>{pet.category.name}</dd>
               <dt className="text-brand-900/50">Cins/növ</dt>
               <dd>{pet.breed?.name ?? pet.breedFreeText ?? '—'}</dd>
               <dt className="text-brand-900/50">Cinsiyyət</dt>

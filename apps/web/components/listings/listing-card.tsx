@@ -11,44 +11,42 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/listings/${listing.slug}`}
-      className="group overflow-hidden rounded-card border border-cream-200 bg-white transition-shadow hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-card bg-white ring-1 ring-cream-200 transition-all duration-200 hover:-translate-y-1 hover:shadow-soft"
     >
-      <div className="relative aspect-square bg-cream-100">
+      <div className="relative aspect-square overflow-hidden bg-cream-100">
         {cover ? (
           <img
             src={imageVariant(cover.url, 'card')}
             alt={cover.alt}
-            className="size-full object-cover"
+            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-5xl">
-            {listing.pet.category.emoji}
-          </div>
+          <div className="flex size-full items-center justify-center text-4xl text-brand-200">🐾</div>
         )}
-        <div className="absolute left-2 top-2">
+        <div className="absolute left-2.5 top-2.5">
           <ListingBadge type={listing.type} />
         </div>
         {listing.featured && (
           <span
             title="Seçilmiş"
-            className="absolute right-2 top-2 rounded-full bg-white/90 px-1.5 py-0.5 text-sm text-amber-500 shadow"
+            className="absolute right-2.5 top-2.5 rounded-full bg-white/95 px-2 py-0.5 text-sm text-amber-500 shadow"
           >
             ★
           </span>
         )}
       </div>
 
-      <div className="space-y-1 p-3">
-        <p className="truncate font-semibold">{listing.title}</p>
+      <div className="flex flex-1 flex-col gap-1 p-3.5">
+        <p className="line-clamp-1 font-semibold text-ink">{listing.title}</p>
         {listing.price != null && (
-          <PriceTag value={Number(listing.price)} className="font-bold text-brand-700" />
+          <PriceTag value={Number(listing.price)} className="font-display text-lg font-extrabold text-brand-600" />
         )}
-        <p className="truncate text-sm text-brand-900/60">
+        <p className="line-clamp-1 text-sm text-ink/50">
           {listing.pet.breed?.name ?? listing.pet.breedFreeText ?? listing.pet.category.name}
           {listing.city ? ` · ${listing.city.name}` : ''}
         </p>
         {isBusiness && (
-          <span className="inline-block rounded bg-brand-50 px-1.5 py-0.5 text-xs text-brand-700">
+          <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-600">
             Biznes
           </span>
         )}

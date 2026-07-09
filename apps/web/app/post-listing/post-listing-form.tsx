@@ -39,7 +39,7 @@ export function PostListingForm({
           </option>
           {pets.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.category.emoji} {p.name}
+              {p.name}
               {p.breed ? ` — ${p.breed.name}` : ''}
             </option>
           ))}

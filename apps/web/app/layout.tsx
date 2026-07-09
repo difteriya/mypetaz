@@ -1,9 +1,24 @@
 import type { Metadata } from 'next';
+import { Nunito, Nunito_Sans } from 'next/font/google';
+import NextTopLoader from 'nextjs-toploader';
 import { getBlockMap } from '@/lib/cms/data';
 import { SiteHeader } from '@/components/site/site-header';
 import { SiteFooter } from '@/components/site/site-footer';
 import { AdHeader, AdBackground } from '@/components/site/site-ads';
 import './globals.css';
+
+const display = Nunito({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['700', '800', '900'],
+  variable: '--font-display',
+  display: 'swap',
+});
+const body = Nunito_Sans({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['400', '600', '700'],
+  variable: '--font-body',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -18,8 +33,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const [global, footer] = await Promise.all([getBlockMap('GLOBAL'), getBlockMap('FOOTER')]);
 
   return (
-    <html lang="az">
+    <html lang="az" className={`${display.variable} ${body.variable}`}>
       <body className="min-h-screen antialiased">
+        <NextTopLoader color="#f4622f" height={3} showSpinner={false} shadow="0 0 8px #f4622f" />
         <AdBackground global={global.raw} />
         <AdHeader global={global.raw} />
         <SiteHeader />

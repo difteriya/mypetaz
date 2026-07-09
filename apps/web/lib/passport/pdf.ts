@@ -63,7 +63,7 @@ export async function buildPassportPdf(shared: SharedPet): Promise<Uint8Array> {
   }
 
   if (fields.basicInfo) {
-    row('Kateqoriya', `${pet.category.emoji ?? ''} ${pet.category.name}`.trim());
+    row('Kateqoriya', pet.category.name);
     row('Cins/növ', pet.breed?.name ?? pet.breedFreeText ?? '—');
     row('Cinsiyyət', SEX_LABEL[pet.sex] ?? pet.sex);
     if (pet.birthDate) row('Doğum tarixi', pet.birthDate.toISOString().slice(0, 10));

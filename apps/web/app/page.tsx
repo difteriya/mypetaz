@@ -34,21 +34,22 @@ export default async function HomePage() {
         }}
       />
       {/* Hero */}
-      <section className="relative flex flex-col items-center gap-5 overflow-hidden rounded-card py-16 text-center">
-        {onImage && (
+      <section className="relative isolate overflow-hidden rounded-[2rem] px-6 py-20 text-center sm:py-24">
+        {onImage ? (
           <>
             <img src={imageVariant(heroImage, 'full')} alt="" className="absolute inset-0 -z-10 size-full object-cover" />
-            <div className="absolute inset-0 -z-10 bg-black/40" />
+            <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-black/25" />
           </>
+        ) : (
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-100 via-cream-100 to-teal-50" />
         )}
-        <span className="text-5xl">🐾</span>
-        <h1 className={`text-4xl font-bold ${onImage ? 'text-white' : 'text-brand-700'}`}>
-          {home.get('hero_title', 'mypet.az')}
+        <h1 className={`mx-auto max-w-2xl text-4xl font-extrabold sm:text-5xl ${onImage ? 'text-white' : 'text-ink'}`}>
+          {home.get('hero_title', 'Sənə yeni dost tapaq')}
         </h1>
-        <p className={`max-w-md text-lg ${onImage ? 'text-white/90' : 'text-brand-900/70'}`}>
-          {home.get('hero_subtitle', 'Azərbaycanda ev heyvanları üçün "hamısı bir yerdə" portal.')}
+        <p className={`mx-auto mt-4 max-w-lg text-lg ${onImage ? 'text-white/90' : 'text-ink/70'}`}>
+          {home.get('hero_subtitle', 'Azərbaycanda ev heyvanları üçün hər şey bir yerdə.')}
         </p>
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Link href="/listings">
             <Button>Elanlara bax</Button>
           </Link>
@@ -59,17 +60,16 @@ export default async function HomePage() {
       </section>
 
       {/* Categories */}
-      <section className="mt-8">
-        <h2 className="mb-4 text-xl font-bold text-brand-700">Kateqoriyalar</h2>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+      <section className="mt-12">
+        <h2 className="mb-4 text-2xl font-extrabold text-ink">Kateqoriyalar</h2>
+        <div className="flex flex-wrap gap-2.5">
           {categories.map((c) => (
             <Link
               key={c.id}
               href={`/listings?categoryId=${c.id}`}
-              className="flex flex-col items-center gap-1 rounded-card border border-cream-200 bg-white p-3 text-center transition-colors hover:border-brand-300"
+              className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink/80 ring-1 ring-cream-200 transition-all hover:-translate-y-0.5 hover:text-brand-600 hover:ring-brand-200"
             >
-              <span className="text-3xl">{c.emoji}</span>
-              <span className="text-xs">{c.name}</span>
+              {c.name}
             </Link>
           ))}
         </div>
@@ -77,8 +77,8 @@ export default async function HomePage() {
 
       {/* Featured */}
       {featured.length > 0 && (
-        <section className="mt-10">
-          <h2 className="mb-4 text-xl font-bold text-brand-700">Seçilmiş Elanlar</h2>
+        <section className="mt-12">
+          <h2 className="mb-4 text-2xl font-extrabold text-ink">Seçilmiş Elanlar</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {featured.map((l) => (
               <ListingCard key={l.id} listing={l} />
@@ -89,9 +89,9 @@ export default async function HomePage() {
 
       {/* Latest */}
       {latest.length > 0 && (
-        <section className="mt-10">
+        <section className="mt-12">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-brand-700">Son Elanlar</h2>
+            <h2 className="text-2xl font-extrabold text-ink">Son Elanlar</h2>
             <Link href="/listings" className="text-sm text-brand-600 hover:underline">
               Hamısı →
             </Link>

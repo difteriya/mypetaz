@@ -52,7 +52,7 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
     .filter((r) => r.value !== undefined && r.value !== '' && r.value !== null);
 
   const rows: Array<[string, string]> = [
-    ['Kateqoriya', `${pet.category.emoji ?? ''} ${pet.category.name}`.trim()],
+    ['Kateqoriya', pet.category.name],
     ['Cins/növ', pet.breed?.name ?? pet.breedFreeText ?? '—'],
     ['Cinsiyyət', SEX_LABEL[pet.sex] ?? pet.sex],
     ...(pet.birthDate
@@ -93,8 +93,8 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
           ))}
         </div>
       ) : (
-        <div className="mt-4 flex aspect-video items-center justify-center rounded-card bg-cream-100 text-6xl">
-          {pet.category.emoji}
+        <div className="mt-4 flex aspect-video items-center justify-center rounded-card bg-cream-100 text-6xl text-brand-200">
+          🐾
         </div>
       )}
 

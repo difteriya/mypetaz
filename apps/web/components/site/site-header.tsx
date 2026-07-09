@@ -13,9 +13,7 @@ export function SiteHeader() {
     let active = true;
     fetch('/api/auth/session')
       .then((r) => r.json())
-      .then((s) => {
-        if (active) setLoggedIn(Boolean(s?.user));
-      })
+      .then((s) => active && setLoggedIn(Boolean(s?.user)))
       .catch(() => {});
     return () => {
       active = false;
@@ -23,31 +21,32 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header className="w-full border-b border-cream-200 bg-white">
+    <header className="sticky top-0 z-30 w-full border-b border-cream-200 bg-cream-50/90 backdrop-blur">
       <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="text-xl font-bold text-brand-700">
-          🐾 mypet.az
+        <Link href="/" className="flex items-center gap-1.5 font-display text-xl font-extrabold text-brand-600">
+          <span aria-hidden>🐾</span> mypet<span className="text-teal-500">.az</span>
         </Link>
-        <nav className="hidden gap-5 text-sm sm:flex">
-          <Link href="/listings" className="text-brand-900/70 hover:text-brand-700">
+
+        <nav className="hidden gap-6 text-[0.95rem] font-semibold sm:flex">
+          <Link href="/listings" className="text-ink/70 transition-colors hover:text-brand-600">
             Elanlar
           </Link>
-          <Link href="/businesses" className="text-brand-900/70 hover:text-brand-700">
+          <Link href="/businesses" className="text-ink/70 transition-colors hover:text-brand-600">
             Bizneslər
           </Link>
-          <Link href="/blog" className="text-brand-900/70 hover:text-brand-700">
+          <Link href="/blog" className="text-ink/70 transition-colors hover:text-brand-600">
             Bloq
           </Link>
         </nav>
+
         <div className="flex items-center gap-2">
           <Link href="/post-listing">
-            <Button>Elan yerləşdir</Button>
+            <Button size="sm">Elan yerləşdir</Button>
           </Link>
-          <Link
-            href={loggedIn ? '/dashboard' : '/login'}
-            className="text-sm font-medium text-brand-700 hover:underline"
-          >
-            {loggedIn ? 'Panel' : 'Daxil ol'}
+          <Link href={loggedIn ? '/dashboard' : '/login'}>
+            <Button size="sm" variant="secondary">
+              {loggedIn ? 'Profil' : 'Daxil ol'}
+            </Button>
           </Link>
         </div>
       </div>

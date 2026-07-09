@@ -67,9 +67,7 @@ export default async function ListingSegmentPage({ params }: { params: Promise<{
         › <span>{category.name}</span>
       </nav>
 
-      <h1 className="text-2xl font-bold text-brand-700">
-        {category.emoji} {category.name} elanları
-      </h1>
+      <h1 className="text-2xl font-extrabold text-ink">{category.name} elanları</h1>
 
       {category.breeds.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">

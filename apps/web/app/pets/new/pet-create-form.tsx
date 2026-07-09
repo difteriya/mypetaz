@@ -66,14 +66,13 @@ export function PetCreateForm({ categories }: { categories: CategoryForForm[] })
               type="button"
               key={c.id}
               onClick={() => setCategoryId(c.id)}
-              className={`flex flex-col items-center gap-1 rounded-card border p-3 transition-colors ${
+              className={`rounded-card border p-3 text-sm font-semibold transition-colors ${
                 c.id === categoryId
-                  ? 'border-brand-400 bg-brand-50'
-                  : 'border-cream-200 bg-white hover:border-brand-200'
+                  ? 'border-brand-400 bg-brand-50 text-brand-700'
+                  : 'border-cream-200 bg-white text-ink/70 hover:border-brand-200'
               }`}
             >
-              <span className="text-2xl">{c.emoji}</span>
-              <span className="text-xs">{c.name}</span>
+              {c.name}
             </button>
           ))}
         </div>

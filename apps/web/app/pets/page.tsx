@@ -54,8 +54,8 @@ export default async function MyPetsPage() {
                       className="size-full object-cover"
                     />
                   ) : (
-                    <div className="flex size-full items-center justify-center text-4xl">
-                      {pet.category.emoji}
+                    <div className="flex size-full items-center justify-center text-4xl text-brand-200">
+                      🐾
                     </div>
                   )}
                 </div>
@@ -80,7 +80,6 @@ export default async function MyPetsPage() {
                 key={t.id}
                 className="flex items-center gap-3 rounded-card border border-cream-200 bg-white/60 p-3 text-sm text-brand-900/60"
               >
-                <span className="text-xl">{t.pet.category.emoji}</span>
                 <span className="font-medium">{t.pet.name}</span>
                 <span>·</span>
                 <span>Köçürülüb: {t.newOwner.name ?? t.newOwner.email}</span>
