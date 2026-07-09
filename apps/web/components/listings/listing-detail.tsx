@@ -1,43 +1,42 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
-import { getListingBySlug, getSimilarListings } from '@/lib/listings/data';
+import { getListingBySlug, getSimilarListings, getListingStatusBySlug } from '@/lib/listings/data';
 import { imageVariant } from '@/lib/images';
-import { ListingBadge } from '@/components/listings/listing-badge';
-import { ListingCard } from '@/components/listings/listing-card';
-import { PriceTag } from '@/components/listings/price-tag';
-import { PhoneReveal } from '@/components/listings/phone-reveal';
-import { FavoriteButton } from '@/components/listings/favorite-button';
+import { ListingBadge } from './listing-badge';
+import { ListingCard } from './listing-card';
+import { PriceTag } from './price-tag';
+import { PhoneReveal } from './phone-reveal';
+import { FavoriteButton } from './favorite-button';
 import { startConversationAction } from '@/lib/messages/actions';
 import { isFavorited } from '@/lib/favorites/data';
 import { listReviews, getReviewAggregate, getMyReview } from '@/lib/reviews/data';
 import { ReviewSection } from '@/components/reviews/review-section';
 import { ReportButton } from '@/components/report-button';
+import { JsonLd, APP_URL } from '@/components/json-ld';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
+/** Listing detail with Product/Offer + BreadcrumbList JSON-LD (PLAN.md §8.3). */
+export async function ListingDetailView({ slug }: { slug: string }) {
   const listing = await getListingBySlug(slug);
-  if (!listing) return { title: 'Elan tapılmadı' };
-  const cityPart = listing.city ? `, ${listing.city.name}` : '';
-  const pricePart = listing.price != null ? ` — ${Number(listing.price)} ₼` : '';
-  return {
-    title: `${listing.title}${cityPart}`,
-    description: (listing.description ?? `${listing.title}${cityPart}${pricePart}`).slice(0, 160),
-  };
-}
 
-export default async function ListingDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const listing = await getListingBySlug(slug);
-  if (!listing) notFound();
+  if (!listing) {
+    // FINISHED/removed → friendly "gone" page instead of a soft-404 (§8.4).
+    const existing = await getListingStatusBySlug(slug);
+    if (!existing) notFound();
+    return (
+      <main className="mx-auto max-w-xl px-4 py-16 text-center">
+        <p className="text-4xl">🐾</p>
+        <h1 className="mt-3 text-2xl font-bold text-brand-700">Bu elan artıq mövcud deyil</h1>
+        <p className="mt-2 text-brand-900/60">Elan bağlanıb və ya silinib.</p>
+        <Link href="/listings" className="mt-4 inline-block font-semibold text-brand-600 hover:underline">
+          Digər elanlara bax →
+        </Link>
+      </main>
+    );
+  }
 
   const { pet } = listing;
   const staticFields = (pet.staticFields ?? {}) as Record<string, unknown>;
@@ -54,27 +53,56 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     session?.user ? getMyReview(session.user.id, 'LISTING', listing.id) : Promise.resolve(null),
   ]);
 
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: listing.title,
+      description: listing.description ?? undefined,
+      image: pet.images.map((i) => `${APP_URL}${imageVariant(i.url, 'detail')}`),
+      offers: {
+        '@type': 'Offer',
+        priceCurrency: 'AZN',
+        price: listing.price != null ? Number(listing.price) : undefined,
+        availability: 'https://schema.org/InStock',
+        url: `${APP_URL}/listings/${listing.slug}`,
+      },
+      ...(reviewAgg.count > 0
+        ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: reviewAgg.avg, reviewCount: reviewAgg.count } }
+        : {}),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Ana səhifə', item: APP_URL },
+        { '@type': 'ListItem', position: 2, name: 'Elanlar', item: `${APP_URL}/listings` },
+        { '@type': 'ListItem', position: 3, name: `${pet.category.name}`, item: `${APP_URL}/listings/${pet.category.slug}` },
+        { '@type': 'ListItem', position: 4, name: listing.title, item: `${APP_URL}/listings/${listing.slug}` },
+      ],
+    },
+  ];
+
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-8">
+      <JsonLd data={jsonLd} />
       <nav className="mb-3 text-sm text-brand-900/50">
         <Link href="/listings" className="hover:underline">
           Elanlar
+        </Link>{' '}
+        ›{' '}
+        <Link href={`/listings/${pet.category.slug}`} className="hover:underline">
+          {pet.category.name}
         </Link>{' '}
         › <span>{listing.title}</span>
       </nav>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        {/* Main */}
         <div>
           {pet.images.length > 0 ? (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {pet.images.map((img) => (
-                <img
-                  key={img.id}
-                  src={imageVariant(img.url, 'detail')}
-                  alt={img.alt}
-                  className="aspect-square w-full rounded-card object-cover"
-                />
+                <img key={img.id} src={imageVariant(img.url, 'detail')} alt={img.alt} className="aspect-square w-full rounded-card object-cover" />
               ))}
             </div>
           ) : (
@@ -117,16 +145,12 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
           </dl>
 
           {listing.description && (
-            <p className="mt-4 whitespace-pre-line rounded-card bg-white p-5 text-sm">
-              {listing.description}
-            </p>
+            <p className="mt-4 whitespace-pre-line rounded-card bg-white p-5 text-sm">{listing.description}</p>
           )}
 
           {listing.lat != null && listing.lng != null && (
             <details className="mt-4">
-              <summary className="cursor-pointer font-semibold text-brand-600">
-                Xəritədə göstər
-              </summary>
+              <summary className="cursor-pointer font-semibold text-brand-600">Xəritədə göstər</summary>
               <iframe
                 title="Xəritə"
                 className="mt-2 h-72 w-full rounded-card border border-cream-200"
@@ -136,7 +160,6 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
           )}
         </div>
 
-        {/* Sidebar — seller */}
         <aside className="space-y-4">
           <div className="rounded-card bg-white p-5">
             {business ? (
@@ -171,13 +194,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
           targetId={listing.id}
           avg={reviewAgg.avg}
           count={reviewAgg.count}
-          reviews={reviews.map((r) => ({
-            id: r.id,
-            rating: r.rating,
-            content: r.content,
-            userName: r.user.name,
-            createdAt: r.createdAt.toISOString(),
-          }))}
+          reviews={reviews.map((r) => ({ id: r.id, rating: r.rating, content: r.content, userName: r.user.name, createdAt: r.createdAt.toISOString() }))}
           canReview={Boolean(session?.user)}
           isOwner={session?.user?.id === listing.userId}
           myRating={myReview?.rating}

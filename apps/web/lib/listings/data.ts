@@ -161,6 +161,23 @@ export function getMyPetsForListing(userId: string) {
   });
 }
 
+// --- SEO landing helpers (PLAN.md §8.1) ---
+export function getPetCategoryBySlug(slug: string) {
+  return prisma.petCategory.findFirst({
+    where: { slug, active: true },
+    include: { breeds: { where: { active: true }, orderBy: { order: 'asc' }, select: { id: true, name: true, slug: true } } },
+  });
+}
+
+export function getBreedBySlugInCategory(categoryId: string, breedSlug: string) {
+  return prisma.breed.findFirst({ where: { categoryId, slug: breedSlug, active: true } });
+}
+
+/** Any-status lookup — lets a FINISHED/removed listing render a "gone" page (§8.4). */
+export function getListingStatusBySlug(slug: string) {
+  return prisma.listing.findUnique({ where: { slug }, select: { status: true } });
+}
+
 export function getCitiesList() {
   return prisma.city.findMany({ orderBy: { order: 'asc' } });
 }

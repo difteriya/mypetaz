@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma, type ContentBlockPage, type ContentBlockType } from '@mypet/db';
 import { auth } from '@mypet/auth';
@@ -38,13 +38,14 @@ export async function upsertContentBlockAction(fd: FormData): Promise<void> {
     update: { page, type, ...(value ? { value } : {}), order: Number(fd.get('order') ?? 0) },
   });
 
+  revalidateTag('cms');
   revalidatePath('/admin/content');
-  revalidatePath('/');
 }
 
 export async function deleteContentBlockAction(fd: FormData): Promise<void> {
   await assertAdmin();
   const key = String(fd.get('key') ?? '');
   await prisma.contentBlock.deleteMany({ where: { key } });
+  revalidateTag('cms');
   revalidatePath('/admin/content');
 }

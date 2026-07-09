@@ -1,7 +1,27 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@mypet/ui';
 
-export function SiteHeader({ loggedIn }: { loggedIn: boolean }) {
+// Auth is checked client-side so the root layout stays static/ISR-friendly
+// (public pages don't depend on the session — PLAN.md §8.5).
+export function SiteHeader() {
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((s) => {
+        if (active) setLoggedIn(Boolean(s?.user));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <header className="w-full border-b border-cream-200 bg-white">
       <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-4 py-3">

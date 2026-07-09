@@ -9,6 +9,7 @@ import {
 import { getBlockMap } from '@/lib/cms/data';
 import { imageVariant } from '@/lib/images';
 import { ListingCard } from '@/components/listings/listing-card';
+import { JsonLd, APP_URL } from '@/components/json-ld';
 
 export default async function HomePage() {
   const [session, featured, latest, categories, home] = await Promise.all([
@@ -23,6 +24,15 @@ export default async function HomePage() {
 
   return (
     <main className="px-4 py-8">
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'mypet.az',
+          url: APP_URL,
+          description: 'Azərbaycanda ev heyvanları üçün portal.',
+        }}
+      />
       {/* Hero */}
       <section className="relative flex flex-col items-center gap-5 overflow-hidden rounded-card py-16 text-center">
         {onImage && (

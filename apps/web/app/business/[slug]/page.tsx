@@ -6,6 +6,7 @@ import { getActiveListingsByUser } from '@/lib/listings/data';
 import { listReviews, getMyReview } from '@/lib/reviews/data';
 import { ReviewSection } from '@/components/reviews/review-section';
 import { ReportButton } from '@/components/report-button';
+import { JsonLd, APP_URL } from '@/components/json-ld';
 import { parseBusinessHours, isOpenNow, DAYS } from '@/lib/business/hours';
 import { imageVariant } from '@/lib/images';
 import { PhoneReveal } from '@/components/listings/phone-reveal';
@@ -43,8 +44,24 @@ export default async function BusinessStorefront({ params }: { params: Promise<{
   const social = (business.socialLinks ?? {}) as Record<string, string>;
   const categories = business.serviceCategories.map((s) => s.serviceCategory.name);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: business.name,
+    address: business.address ?? undefined,
+    telephone: business.phone ?? undefined,
+    ...(business.lat != null && business.lng != null
+      ? { geo: { '@type': 'GeoCoordinates', latitude: business.lat, longitude: business.lng } }
+      : {}),
+    url: `${APP_URL}/business/${business.slug}`,
+    ...(business.reviewCount > 0
+      ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: business.avgRating, reviewCount: business.reviewCount } }
+      : {}),
+  };
+
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-6">
+      <JsonLd data={jsonLd} />
       {/* Banner + logo */}
       <div className="relative">
         <div className="h-40 w-full overflow-hidden rounded-card bg-cream-200 sm:h-56">
