@@ -12,7 +12,7 @@ const cachedPageMap = (page: ContentBlockPage) =>
       return map;
     },
     ['cms-block-map', page],
-    { tags: ['cms'] },
+    { tags: ['cms'], revalidate: 300 },
   )();
 
 /** All values for a page as a key→value map, with a helper for fallbacks. */
