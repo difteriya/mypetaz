@@ -1,0 +1,784 @@
+// mypet.az — shared Prisma schema (mypet.az + vet.mypet.az).
+//
+// Implements the full Phase-1 data model from PLAN.md §4. Field names are
+// English code identifiers; enum values are English (the UI renders localized
+// Azerbaijani labels separately). Product data (category/breed/city names)
+// is seeded in Azerbaijani — see prisma/seed.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+// `role` and `accountType` are ORTHOGONAL — see PLAN.md §4 / §2.7.
+// A single account can be accountType=BUSINESS AND role=VET at once.
+enum Role {
+  USER
+  VET
+  ADMIN
+}
+
+enum AccountType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum PetSex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum PetStatus {
+  ACTIVE
+  TRANSFERRED
+}
+
+enum PetCategoryFieldType {
+  TEXT
+  NUMBER
+  SELECT
+  BOOL
+}
+
+enum HealthRecordType {
+  VACCINE
+  EXAM
+  SURGERY
+}
+
+enum HealthRecordSource {
+  SELF
+  VET
+}
+
+enum ListingType {
+  SALE
+  ADOPTION
+  LOST_FOUND
+  MATING
+}
+
+// PENDING (default, invisible) → ACTIVE (admin approval) → FINISHED / REJECTED.
+// Ownership transfer moves an ACTIVE listing to FINISHED (see PLAN.md §2.4/§2.5).
+enum ListingStatus {
+  PENDING
+  ACTIVE
+  FINISHED
+  REJECTED
+}
+
+// Shared moderation status for BusinessProfile / BlogPost / Review (PLAN.md §2).
+enum ContentStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+enum ReviewTargetType {
+  LISTING
+  BUSINESS
+  // Phase 2: VET (see PLAN.md §2.4 / §6)
+}
+
+enum NotificationType {
+  LISTING_APPROVED
+  LISTING_REJECTED
+  BLOG_APPROVED
+  BLOG_REJECTED
+  REVIEW_APPROVED
+  NEW_MESSAGE
+  BUSINESS_APPROVED
+  BUSINESS_REJECTED
+  OWNERSHIP_TRANSFER
+}
+
+enum ReportTargetType {
+  LISTING
+  BLOG_POST
+  REVIEW
+  BUSINESS
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+}
+
+enum ContentBlockPage {
+  HOME
+  ABOUT
+  CONTACT
+  FOOTER
+  GLOBAL
+}
+
+enum ContentBlockType {
+  TEXT
+  RICHTEXT
+  IMAGE
+  URL
+}
+
+enum VetAppointmentStatus {
+  REQUEST
+  CONFIRMED
+  REJECTED
+  COMPLETED
+}
+
+enum AppointmentCreatedBy {
+  CUSTOMER
+  DOCTOR
+}
+
+// ============================================================================
+// User + Auth.js (NextAuth v5) adapter models
+// ============================================================================
+
+model User {
+  id            String      @id @default(cuid())
+  name          String?
+  email         String      @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  passwordHash  String? // null for social-only logins (see PLAN.md §2.8)
+  role          Role        @default(USER)
+  accountType   AccountType @default(INDIVIDUAL)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Auth.js
+  accounts Account[]
+  sessions Session[]
+
+  // Domain relations
+  pets                     Pet[]               @relation("PetOwner")
+  listings                 Listing[]
+  businessProfile          BusinessProfile?
+  vetProfile               VetProfile?
+  blogPosts                BlogPost[]
+  reviews                  Review[]
+  favorites                Favorite[]
+  notifications            Notification[]
+  reports                  Report[]            @relation("ReportReporter")
+  messages                 Message[]           @relation("MessageSender")
+  conversationsAsBuyer     Conversation[]      @relation("BuyerConversations")
+  conversationsAsSeller    Conversation[]      @relation("SellerConversations")
+  transfersGiven           OwnershipTransfer[] @relation("TransferOldOwner")
+  transfersReceived        OwnershipTransfer[] @relation("TransferNewOwner")
+  vetAppointmentsRequested VetAppointment[]    @relation("AppointmentRequester")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================================
+// Business (Shop + Service provider, merged — PLAN.md §2.7)
+// ============================================================================
+
+model BusinessProfile {
+  id              String        @id @default(cuid())
+  userId          String        @unique
+  name            String
+  slug            String        @unique
+  banner          String?
+  bannerAlt       String?
+  logo            String?
+  logoAlt         String?
+  description     String?       @db.Text
+  cityId          String?
+  address         String?
+  lat             Float?
+  lng             Float?
+  phone           String?
+  businessHours   Json? // { mon: {open,close}, ... } — open/closed live status
+  viewCount       Int           @default(0)
+  avgRating       Float? // cache, recomputed on Review approval (PLAN.md §2.4)
+  reviewCount     Int           @default(0)
+  status          ContentStatus @default(PENDING) // self-registration → admin approval
+  approvedAt      DateTime?
+  rejectionReason String?
+  paymentStatus   String? // Phase 2 (paid self-registration)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user              User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city              City?                     @relation(fields: [cityId], references: [id])
+  serviceCategories BusinessServiceCategory[]
+  serviceOfferings  ServiceOffering[]
+
+  @@map("business_profiles")
+}
+
+model ServiceCategory {
+  id        String   @id @default(cuid())
+  name      String // qromer / pet otel / kinoloq / gəzdirmə / digər
+  slug      String   @unique
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  businesses BusinessServiceCategory[]
+
+  @@map("service_categories")
+}
+
+model BusinessServiceCategory {
+  businessId        String
+  serviceCategoryId String
+
+  business        BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  serviceCategory ServiceCategory @relation(fields: [serviceCategoryId], references: [id], onDelete: Cascade)
+
+  @@id([businessId, serviceCategoryId])
+  @@map("business_service_categories")
+}
+
+model ServiceOffering {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String // e.g. "Tük kəsimi", "Gecələmə"
+  price       Decimal? @db.Decimal(10, 2)
+  description String?
+  order       Int      @default(0)
+
+  business BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@map("service_offerings")
+}
+
+// ============================================================================
+// Pet + category / breed / dynamic fields (PLAN.md §2.1–2.2)
+// ============================================================================
+
+// Admin-managed top-level category (İt/Pişik/…/Digər). Kept as a table (not an
+// enum) so new categories need no code change (PLAN.md §2.2 technical note).
+model PetCategory {
+  id            String  @id @default(cuid())
+  slug          String  @unique // it / pisik / dovsan / gemiriciler / baliq / qus / diger
+  name          String // Azerbaijani display name
+  emoji         String?
+  image         String?
+  imageAlt      String?
+  order         Int     @default(0)
+  active        Boolean @default(true)
+  // "Digər": no breed list — user types the type freely (see PLAN.md §2.2.1)
+  freeTextBreed Boolean @default(false)
+
+  breeds Breed[]
+  fields PetCategoryField[]
+  pets   Pet[]
+
+  @@map("pet_categories")
+}
+
+model Breed {
+  id              String  @id @default(cuid())
+  categoryId      String
+  name            String // e.g. "Golden Retriever"
+  slug            String
+  image           String? // representative image, admin-uploaded (PLAN.md §2.10)
+  imageAlt        String?
+  description     String? @db.Text // SEO landing text (PLAN.md §8.1)
+  metaTitle       String?
+  metaDescription String?
+  order           Int     @default(0)
+  active          Boolean @default(true)
+
+  category PetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  pets     Pet[]
+
+  @@unique([categoryId, slug])
+  @@map("breeds")
+}
+
+// Admin-managed dynamic field definitions per category (PLAN.md §2.2 / §4.1).
+// The runtime Zod builder turns these rows into a form + validator.
+model PetCategoryField {
+  id         String               @id @default(cuid())
+  categoryId String
+  fieldName  String // immutable key stored inside Pet.staticFields
+  label      String // human-facing label (may change without breaking data)
+  type       PetCategoryFieldType
+  options    Json? // for SELECT
+  required   Boolean              @default(false)
+  order      Int                  @default(0)
+  active     Boolean              @default(true)
+
+  category PetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, fieldName])
+  @@map("pet_category_fields")
+}
+
+model Pet {
+  id            String    @id @default(cuid())
+  ownerId       String
+  categoryId    String
+  breedId       String? // null for "Qarışıq/Bilinmir" or free-text categories
+  breedFreeText String? // for "Digər" category (PLAN.md §2.2.1)
+  name          String
+  birthDate     DateTime?
+  birthApprox   Boolean   @default(false) // true = birthDate is an approximation
+  sex           PetSex    @default(UNKNOWN)
+  color         String?
+  weight        Float?
+  microchipNo   String?
+  description   String?   @db.Text
+  staticFields  Json      @default("{}") // category-specific dynamic fields (§4.1)
+  status        PetStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  owner           User                @relation("PetOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  category        PetCategory         @relation(fields: [categoryId], references: [id])
+  breed           Breed?              @relation(fields: [breedId], references: [id])
+  images          PetImage[]
+  passport        PetPassport?
+  healthRecords   PetHealthRecord[]
+  shareLinks      PetShareLink[]
+  listings        Listing[]
+  transfers       OwnershipTransfer[]
+  vetAppointments VetAppointment[]
+  vetVisitRecords VetVisitRecord[]
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([breedId])
+  @@map("pets")
+}
+
+model PetImage {
+  id    String @id @default(cuid())
+  petId String
+  url   String // base name; responsive variants derived (PLAN.md §3.1)
+  alt   String // required (auto-generated + editable)
+  order Int    @default(0)
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId])
+  @@map("pet_images")
+}
+
+model PetPassport {
+  id               String    @id @default(cuid())
+  petId            String    @unique
+  documentNo       String?
+  issueDate        DateTime?
+  microchipId      String?
+  birthPlace       String?
+  documentImage    String?
+  documentImageAlt String?
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@map("pet_passports")
+}
+
+model PetHealthRecord {
+  id               String             @id @default(cuid())
+  petId            String
+  type             HealthRecordType
+  name             String
+  date             DateTime
+  nextDate         DateTime? // for future reminders (Phase 2)
+  note             String?
+  source           HealthRecordSource @default(SELF) // "Özüm" vs "Baytar: Dr. X"
+  vetAppointmentId String? // linked if a vet added it
+  createdAt        DateTime           @default(now())
+
+  pet            Pet             @relation(fields: [petId], references: [id], onDelete: Cascade)
+  vetAppointment VetAppointment? @relation(fields: [vetAppointmentId], references: [id])
+  vetVisitRecord VetVisitRecord?
+
+  @@index([petId])
+  @@map("pet_health_records")
+}
+
+model PetShareLink {
+  id           String   @id @default(cuid())
+  petId        String
+  token        String   @unique
+  active       Boolean  @default(true)
+  sharedFields Json // { basicInfo, passport, medicalHistory } selections (§2.11)
+  viewCount    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId])
+  @@map("pet_share_links")
+}
+
+// ============================================================================
+// Listings (PLAN.md §2.4)
+// ============================================================================
+
+model Listing {
+  id              String        @id @default(cuid())
+  type            ListingType
+  petId           String
+  userId          String
+  cityId          String?
+  title           String
+  slug            String        @unique
+  description     String?       @db.Text
+  price           Decimal?      @db.Decimal(10, 2)
+  address         String?
+  lat             Float?
+  lng             Float?
+  phone           String?
+  featured        Boolean       @default(false) // admin-managed in Phase 1 (§2.4)
+  status          ListingStatus @default(PENDING) // never created ACTIVE automatically
+  rejectionReason String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  pet           Pet                 @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city          City?               @relation(fields: [cityId], references: [id])
+  images        ListingImage[]
+  favorites     Favorite[]
+  conversations Conversation[]
+  transfers     OwnershipTransfer[]
+
+  @@index([userId])
+  @@index([petId])
+  @@index([cityId])
+  @@index([status])
+  @@index([type])
+  @@map("listings")
+}
+
+model ListingImage {
+  id        String @id @default(cuid())
+  listingId String
+  url       String
+  alt       String
+  order     Int    @default(0)
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@map("listing_images")
+}
+
+model OwnershipTransfer {
+  id         String   @id @default(cuid())
+  petId      String
+  oldOwnerId String
+  newOwnerId String
+  listingId  String?
+  reverted   Boolean  @default(false) // admin rollback (PLAN.md §2.5)
+  createdAt  DateTime @default(now())
+
+  pet      Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  oldOwner User     @relation("TransferOldOwner", fields: [oldOwnerId], references: [id])
+  newOwner User     @relation("TransferNewOwner", fields: [newOwnerId], references: [id])
+  listing  Listing? @relation(fields: [listingId], references: [id])
+
+  @@index([petId])
+  @@map("ownership_transfers")
+}
+
+// ============================================================================
+// Blog (PLAN.md §2.12)
+// ============================================================================
+
+model BlogCategory {
+  id        String   @id @default(cuid())
+  name      String // Qulluq / Qidalanma / Sağlamlıq / Tərbiyə / Hekayələr
+  slug      String   @unique
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  posts BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogPost {
+  id              String        @id @default(cuid())
+  userId          String
+  categoryId      String
+  title           String
+  slug            String        @unique
+  coverImage      String?
+  coverAlt        String?
+  excerpt         String?
+  content         String        @db.Text
+  status          ContentStatus @default(PENDING) // ACTIVE directly when admin writes
+  metaTitle       String? // filled by admin at approval (SEO, §8.7)
+  metaDescription String?
+  rejectionReason String?
+  publishedAt     DateTime? // when it became ACTIVE
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category BlogCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([status])
+  @@map("blog_posts")
+}
+
+// ============================================================================
+// Reviews (shared for Listing + Business — PLAN.md §2.4)
+// ============================================================================
+
+// Polymorphic target (LISTING/BUSINESS) — targetId is not a DB FK by design
+// so the same model serves both (and VET in Phase 2). Enforced in app logic.
+model Review {
+  id              String           @id @default(cuid())
+  targetType      ReviewTargetType
+  targetId        String
+  userId          String
+  rating          Int // 1–5
+  content         String?
+  status          ContentStatus    @default(PENDING)
+  rejectionReason String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId]) // one review per user per target
+  @@index([targetType, targetId])
+  @@map("reviews")
+}
+
+// ============================================================================
+// Favorites / Messaging (PLAN.md §2.6 / §2.8)
+// ============================================================================
+
+model Favorite {
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([userId, listingId])
+  @@index([listingId])
+  @@map("favorites")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  listingId String
+  buyerId   String
+  sellerId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listing  Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer    User      @relation("BuyerConversations", fields: [buyerId], references: [id])
+  seller   User      @relation("SellerConversations", fields: [sellerId], references: [id])
+  messages Message[]
+
+  @@unique([listingId, buyerId]) // one thread per buyer per listing
+  @@index([sellerId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String   @db.Text
+  read           Boolean  @default(false) // drives unread counts (PLAN.md §2.6)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+// ============================================================================
+// Trust & Safety — Notifications + Reports (PLAN.md §2.13)
+// ============================================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  message   String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+model Report {
+  id         String           @id @default(cuid())
+  targetType ReportTargetType
+  targetId   String
+  reporterId String
+  reason     String
+  note       String?
+  status     ReportStatus     @default(PENDING)
+  createdAt  DateTime         @default(now())
+
+  reporter User @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId])
+  @@index([status])
+  @@map("reports")
+}
+
+// ============================================================================
+// CMS (PLAN.md §2.10) + City
+// ============================================================================
+
+model ContentBlock {
+  id        String           @id @default(cuid())
+  page      ContentBlockPage
+  key       String           @unique // e.g. "hero_image", "banner_1_title"
+  type      ContentBlockType
+  value     String           @db.Text
+  order     Int              @default(0)
+  updatedAt DateTime         @updatedAt
+
+  @@index([page])
+  @@map("content_blocks")
+}
+
+model City {
+  id    String @id @default(cuid())
+  name  String @unique // Bakı, Gəncə, Sumqayıt, ...
+  slug  String @unique
+  order Int    @default(0)
+
+  businesses BusinessProfile[]
+  listings   Listing[]
+
+  @@map("cities")
+}
+
+// ============================================================================
+// Vet platform (vet.mypet.az — PLAN.md §7)
+// ============================================================================
+
+model VetProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  clinicName    String
+  specialty     String?
+  businessHours Json?
+  address       String?
+  licenseNo     String?
+  verified      Boolean  @default(false) // activated after admin approval (§7.1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments VetAppointment[]
+  visitRecords VetVisitRecord[]
+
+  @@map("vet_profiles")
+}
+
+model VetAppointment {
+  id              String               @id @default(cuid())
+  vetId           String
+  petId           String
+  requesterUserId String
+  date            DateTime // date + time
+  status          VetAppointmentStatus @default(REQUEST)
+  note            String?
+  createdBy       AppointmentCreatedBy @default(CUSTOMER)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  vet           VetProfile        @relation(fields: [vetId], references: [id], onDelete: Cascade)
+  pet           Pet               @relation(fields: [petId], references: [id], onDelete: Cascade)
+  requester     User              @relation("AppointmentRequester", fields: [requesterUserId], references: [id])
+  visitRecord   VetVisitRecord?
+  healthRecords PetHealthRecord[]
+
+  @@index([vetId])
+  @@index([petId])
+  @@map("vet_appointments")
+}
+
+model VetVisitRecord {
+  id             String    @id @default(cuid())
+  appointmentId  String    @unique
+  petId          String
+  vetId          String
+  examType       String
+  description    String?   @db.Text
+  date           DateTime
+  approved       Boolean   @default(false) // on approve → copy to PetHealthRecord
+  approvedAt     DateTime?
+  healthRecordId String?   @unique // the PetHealthRecord it was copied into
+  createdAt      DateTime  @default(now())
+
+  appointment  VetAppointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  pet          Pet              @relation(fields: [petId], references: [id], onDelete: Cascade)
+  vet          VetProfile       @relation(fields: [vetId], references: [id], onDelete: Cascade)
+  healthRecord PetHealthRecord? @relation(fields: [healthRecordId], references: [id])
+
+  @@index([petId])
+  @@map("vet_visit_records")
+}

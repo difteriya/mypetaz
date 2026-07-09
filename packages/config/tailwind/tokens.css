@@ -1,0 +1,32 @@
+/*
+ * Shared design tokens for mypet.az (Tailwind CSS 4, CSS-first config).
+ * Warm & friendly palette — cream background, warm accent (see PLAN.md §5).
+ * Import AFTER `@import "tailwindcss";` in each app's globals.css.
+ */
+@theme {
+  /* Brand — warm coral/terracotta accent */
+  --color-brand-50: #fff5f1;
+  --color-brand-100: #ffe6da;
+  --color-brand-200: #ffc9b0;
+  --color-brand-300: #ffa47d;
+  --color-brand-400: #ff7f4d;
+  --color-brand-500: #f76c3c;
+  --color-brand-600: #e2531f;
+  --color-brand-700: #bc3f16;
+  --color-brand-800: #963417;
+  --color-brand-900: #7a2f16;
+
+  /* Cream surfaces */
+  --color-cream-50: #fffdf9;
+  --color-cream-100: #fdf7ee;
+  --color-cream-200: #f7ecd9;
+
+  /* Listing-type badge colors (see PLAN.md §2.4) */
+  --color-badge-sale: #17b0a7;
+  --color-badge-adoption: #f27ba3;
+  --color-badge-lostfound: #e2453b;
+  --color-badge-mating: #8b5cf6;
+
+  /* Radius / shadow — rounded, soft */
+  --radius-card: 1rem;
+}

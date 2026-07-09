@@ -1,0 +1,31 @@
+{
+  "name": "mypet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "mypet.az — pet portal + vet platform (monorepo)",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,css}\"",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:generate": "pnpm --filter @mypet/db generate",
+    "db:migrate": "pnpm --filter @mypet/db migrate",
+    "db:deploy": "pnpm --filter @mypet/db deploy",
+    "db:studio": "pnpm --filter @mypet/db studio",
+    "db:seed": "pnpm --filter @mypet/db seed"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "turbo": "^2.5.0",
+    "typescript": "^5.7.3"
+  }
+}

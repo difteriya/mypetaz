@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+/* Shared warm palette / design tokens (single source of truth). */
+@import '../../../packages/config/tailwind/tokens.css';
+
+/* Scan shared UI package for Tailwind classes (node_modules is skipped by default). */
+@source '../../../packages/ui/src';
+
+body {
+  background-color: var(--color-cream-100);
+  color: #2c2420;
+}

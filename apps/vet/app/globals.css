@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+
+/* Shared palette; the vet platform uses a calmer, more clinical tone (PLAN.md §5). */
+@import '../../../packages/config/tailwind/tokens.css';
+
+@source '../../../packages/ui/src';
+
+body {
+  background-color: #f7fafb;
+  color: #1f2b30;
+}
