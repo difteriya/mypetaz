@@ -1,12 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { auth } from '@mypet/auth';
+import { Button } from '@mypet/ui';
 import { getListingBySlug, getSimilarListings } from '@/lib/listings/data';
 import { imageVariant } from '@/lib/images';
 import { ListingBadge } from '@/components/listings/listing-badge';
 import { ListingCard } from '@/components/listings/listing-card';
 import { PriceTag } from '@/components/listings/price-tag';
 import { PhoneReveal } from '@/components/listings/phone-reveal';
+import { startConversationAction } from '@/lib/messages/actions';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 
@@ -37,7 +40,8 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
     .map((f) => ({ label: f.label, value: staticFields[f.fieldName], type: f.type }))
     .filter((r) => r.value !== undefined && r.value !== '' && r.value !== null);
   const business = listing.user.businessProfile;
-  const similar = await getSimilarListings(listing);
+  const [session, similar] = await Promise.all([auth(), getSimilarListings(listing)]);
+  const canMessage = session?.user && session.user.id !== listing.userId;
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-8">
@@ -132,6 +136,14 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
               <p className="mb-2 font-semibold">{listing.user.name ?? 'İstifadəçi'}</p>
             )}
             <PhoneReveal phone={listing.phone ?? ''} />
+            {canMessage && (
+              <form action={startConversationAction} className="mt-3">
+                <input type="hidden" name="listingId" value={listing.id} />
+                <Button type="submit" variant="secondary">
+                  Mesaj göndər
+                </Button>
+              </form>
+            )}
           </div>
         </aside>
       </div>

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
 import { logoutAction } from '@/lib/actions/auth';
+import { getUnreadTotal } from '@/lib/messages/data';
 
 export const metadata: Metadata = { title: 'İdarə paneli' };
 
@@ -12,6 +13,7 @@ export default async function DashboardPage() {
   if (!session?.user) redirect('/login');
 
   const { name, email, role, accountType } = session.user;
+  const unread = await getUnreadTotal(session.user.id);
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-12">
@@ -36,6 +38,9 @@ export default async function DashboardPage() {
         </Link>
         <Link href="/dashboard/business">
           <Button variant="secondary">Biznesim</Button>
+        </Link>
+        <Link href="/messages">
+          <Button variant="secondary">Mesajlarım{unread > 0 ? ` (${unread})` : ''}</Button>
         </Link>
         <form action={logoutAction}>
           <Button type="submit" variant="secondary">
