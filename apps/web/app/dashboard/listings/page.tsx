@@ -25,7 +25,7 @@ export default async function MyListingsPage() {
   const listings = await listMyListings(session.user.id);
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
+    <div className="mx-auto max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-brand-700">Mənim elanlarım</h1>
         <Link href="/post-listing">
@@ -75,6 +75,6 @@ export default async function MyListingsPage() {
           })}
         </ul>
       )}
-    </main>
+    </div>
   );
 }

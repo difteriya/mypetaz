@@ -9,7 +9,9 @@ import { ListingBadge } from '@/components/listings/listing-badge';
 import { ListingCard } from '@/components/listings/listing-card';
 import { PriceTag } from '@/components/listings/price-tag';
 import { PhoneReveal } from '@/components/listings/phone-reveal';
+import { FavoriteButton } from '@/components/listings/favorite-button';
 import { startConversationAction } from '@/lib/messages/actions';
+import { isFavorited } from '@/lib/favorites/data';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 
@@ -42,6 +44,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   const business = listing.user.businessProfile;
   const [session, similar] = await Promise.all([auth(), getSimilarListings(listing)]);
   const canMessage = session?.user && session.user.id !== listing.userId;
+  const favorited = session?.user ? await isFavorited(session.user.id, listing.id) : false;
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-8">
@@ -144,6 +147,9 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
                 </Button>
               </form>
             )}
+            <div className="mt-3">
+              <FavoriteButton listingId={listing.id} initialFavorited={favorited} />
+            </div>
           </div>
         </aside>
       </div>

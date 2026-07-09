@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
@@ -16,9 +15,13 @@ export default async function DashboardPage() {
   const unread = await getUnreadTotal(session.user.id);
 
   return (
-    <main className="mx-auto max-w-[1280px] px-4 py-12">
-      <h1 className="text-2xl font-bold text-brand-700">İdarə paneli</h1>
-      <p className="mt-2 text-brand-900/70">Xoş gəldin, {name ?? email}!</p>
+    <div>
+      <h1 className="text-2xl font-bold text-brand-700">Xoş gəldin, {name ?? email}!</h1>
+      {unread > 0 && (
+        <p className="mt-1 text-sm text-brand-900/70">
+          {unread} oxunmamış mesajınız var.
+        </p>
+      )}
 
       <dl className="mt-6 grid max-w-md grid-cols-2 gap-2 rounded-card bg-white p-4 text-sm">
         <dt className="text-brand-900/50">E-poçt</dt>
@@ -29,25 +32,11 @@ export default async function DashboardPage() {
         <dd>{accountType}</dd>
       </dl>
 
-      <div className="mt-6 flex gap-3">
-        <Link href="/pets">
-          <Button>Mənim petlərim</Button>
-        </Link>
-        <Link href="/dashboard/listings">
-          <Button variant="secondary">Mənim elanlarım</Button>
-        </Link>
-        <Link href="/dashboard/business">
-          <Button variant="secondary">Biznesim</Button>
-        </Link>
-        <Link href="/messages">
-          <Button variant="secondary">Mesajlarım{unread > 0 ? ` (${unread})` : ''}</Button>
-        </Link>
-        <form action={logoutAction}>
-          <Button type="submit" variant="secondary">
-            Çıxış
-          </Button>
-        </form>
-      </div>
-    </main>
+      <form action={logoutAction} className="mt-6">
+        <Button type="submit" variant="secondary">
+          Çıxış
+        </Button>
+      </form>
+    </div>
   );
 }

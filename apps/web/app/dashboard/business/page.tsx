@@ -27,7 +27,7 @@ export default async function MyBusinessPage() {
   const status = STATUS_META[business.status] ?? { label: business.status, className: 'bg-cream-200' };
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
+    <div className="mx-auto max-w-2xl">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-brand-700">Biznesim</h1>
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${status.className}`}>
@@ -60,6 +60,6 @@ export default async function MyBusinessPage() {
           }))}
         />
       </div>
-    </main>
+    </div>
   );
 }
