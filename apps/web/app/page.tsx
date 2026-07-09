@@ -2,18 +2,33 @@ import Link from 'next/link';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
 import { getFeaturedListings } from '@/lib/listings/data';
+import { getBlockMap } from '@/lib/cms/data';
+import { imageVariant } from '@/lib/images';
 import { ListingCard } from '@/components/listings/listing-card';
 
 export default async function HomePage() {
-  const [session, featured] = await Promise.all([auth(), getFeaturedListings()]);
+  const [session, featured, home] = await Promise.all([
+    auth(),
+    getFeaturedListings(),
+    getBlockMap('HOME'),
+  ]);
+  const heroImage = home.get('hero_image');
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-12">
-      <section className="flex flex-col items-center gap-6 py-10 text-center">
+      <section className="relative flex flex-col items-center gap-6 overflow-hidden rounded-card py-16 text-center">
+        {heroImage.startsWith('/uploads/') && (
+          <>
+            <img src={imageVariant(heroImage, 'full')} alt="" className="absolute inset-0 -z-10 size-full object-cover" />
+            <div className="absolute inset-0 -z-10 bg-black/40" />
+          </>
+        )}
         <span className="text-5xl">🐾</span>
-        <h1 className="text-4xl font-bold text-brand-700">mypet.az</h1>
-        <p className="max-w-md text-lg text-brand-900/70">
-          Azərbaycanda ev heyvanları üçün &quot;hamısı bir yerdə&quot; portal.
+        <h1 className={`text-4xl font-bold ${heroImage.startsWith('/uploads/') ? 'text-white' : 'text-brand-700'}`}>
+          {home.get('hero_title', 'mypet.az')}
+        </h1>
+        <p className={`max-w-md text-lg ${heroImage.startsWith('/uploads/') ? 'text-white/90' : 'text-brand-900/70'}`}>
+          {home.get('hero_subtitle', 'Azərbaycanda ev heyvanları üçün "hamısı bir yerdə" portal.')}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link href="/listings">

@@ -1,4 +1,4 @@
-import { PrismaClient, PetCategoryFieldType } from '@prisma/client';
+import { PrismaClient, PetCategoryFieldType, ContentBlockPage, ContentBlockType } from '@prisma/client';
 import { slugify } from '../src/slug';
 
 const prisma = new PrismaClient();
@@ -232,6 +232,28 @@ const SERVICE_CATEGORIES = [
 
 const BLOG_CATEGORIES = ['Qulluq', 'Qidalanma', 'Sağlamlıq', 'Tərbiyə', 'Hekayələr'];
 
+// ---------------------------------------------------------------------------
+// CMS content blocks (PLAN.md §2.10). Admin edits values without a deploy.
+// ---------------------------------------------------------------------------
+type BlockSeed = { key: string; page: string; type: string; value: string; order: number };
+const CONTENT_BLOCKS: BlockSeed[] = [
+  { key: 'hero_title', page: 'HOME', type: 'TEXT', value: 'Sənə yeni dost tapaq', order: 0 },
+  { key: 'hero_subtitle', page: 'HOME', type: 'TEXT', value: 'Azərbaycanda ev heyvanları üçün hər şey bir yerdə', order: 1 },
+  { key: 'hero_image', page: 'HOME', type: 'IMAGE', value: '', order: 2 },
+  { key: 'about_content', page: 'ABOUT', type: 'RICHTEXT', value: 'mypet.az — Azərbaycanda ev heyvanları üçün portal.', order: 0 },
+  { key: 'contact_content', page: 'CONTACT', type: 'RICHTEXT', value: 'Bizimlə əlaqə: info@mypet.az', order: 0 },
+  { key: 'footer_address', page: 'FOOTER', type: 'TEXT', value: 'Bakı, Azərbaycan', order: 0 },
+  { key: 'footer_phone', page: 'FOOTER', type: 'TEXT', value: '+994 12 000 00 00', order: 1 },
+  { key: 'footer_email', page: 'FOOTER', type: 'TEXT', value: 'info@mypet.az', order: 2 },
+  { key: 'footer_instagram', page: 'FOOTER', type: 'URL', value: '', order: 3 },
+  { key: 'footer_facebook', page: 'FOOTER', type: 'URL', value: '', order: 4 },
+  // Ad zones (PLAN.md §5.1) — managed via CMS in Phase 1 (step 17).
+  { key: 'ad_header', page: 'GLOBAL', type: 'IMAGE', value: '', order: 0 },
+  { key: 'ad_header_link', page: 'GLOBAL', type: 'URL', value: '', order: 1 },
+  { key: 'ad_background', page: 'GLOBAL', type: 'IMAGE', value: '', order: 2 },
+  { key: 'ad_background_link', page: 'GLOBAL', type: 'URL', value: '', order: 3 },
+];
+
 async function main() {
   console.log('[seed] cities…');
   for (const [i, name] of CITIES.entries()) {
@@ -300,6 +322,21 @@ async function main() {
       where: { slug },
       update: { name, order: i },
       create: { name, slug, order: i },
+    });
+  }
+
+  console.log('[seed] content blocks…');
+  for (const b of CONTENT_BLOCKS) {
+    await prisma.contentBlock.upsert({
+      where: { key: b.key },
+      update: { page: b.page as ContentBlockPage, type: b.type as ContentBlockType, order: b.order },
+      create: {
+        key: b.key,
+        page: b.page as ContentBlockPage,
+        type: b.type as ContentBlockType,
+        value: b.value,
+        order: b.order,
+      },
     });
   }
 
