@@ -59,7 +59,10 @@ export function getPetForOwner(id: string, ownerId: string) {
       breed: true,
       images: { orderBy: { order: 'asc' } },
       passport: true,
-      healthRecords: { orderBy: { date: 'desc' } },
+      healthRecords: {
+        orderBy: { date: 'desc' },
+        include: { vetAppointment: { select: { vet: { select: { clinicName: true } } } } },
+      },
     },
   });
 }

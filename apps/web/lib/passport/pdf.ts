@@ -85,7 +85,7 @@ export async function buildPassportPdf(shared: SharedPet): Promise<Uint8Array> {
     line('Tibbi tarixçə', 14, BRAND);
     for (const r of pet.healthRecords) {
       if (y < 60) break; // single page
-      const src = r.source === 'VET' ? 'Baytar' : 'Özüm';
+      const src = r.source === 'VET' ? 'Baytar tərəfindən' : 'Pet sahibi tərəfindən';
       line(
         `${r.date.toISOString().slice(0, 10)}  ·  ${HEALTH_LABEL[r.type] ?? r.type}  ·  ${r.name}  (${src})`,
         10,

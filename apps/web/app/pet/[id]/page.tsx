@@ -45,6 +45,7 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
     nextDateStr: r.nextDate ? toDateStr(r.nextDate) : null,
     note: r.note,
     source: r.source,
+    vetLabel: r.vetAppointment?.vet?.clinicName ?? null,
   }));
 
   const staticFields = (pet.staticFields ?? {}) as Record<string, unknown>;

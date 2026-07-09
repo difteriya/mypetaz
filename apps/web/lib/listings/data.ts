@@ -96,7 +96,10 @@ export function getListingBySlug(slug: string) {
           category: { include: { fields: { where: { active: true }, orderBy: { order: 'asc' } } } },
           breed: true,
           passport: true,
-          healthRecords: { orderBy: { date: 'desc' } },
+          healthRecords: {
+            orderBy: { date: 'desc' },
+            include: { vetAppointment: { select: { vet: { select: { clinicName: true } } } } },
+          },
         },
       },
       city: true,

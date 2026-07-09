@@ -172,7 +172,9 @@ export async function ListingDetailView({ slug }: { slug: string }) {
                       <span className="text-ink/50">{r.date.toISOString().slice(0, 10)}</span>
                       {r.nextDate && <span className="text-ink/40">· növbəti: {r.nextDate.toISOString().slice(0, 10)}</span>}
                       <span className={`ml-auto text-xs ${r.source === 'VET' ? 'text-teal-600' : 'text-ink/40'}`}>
-                        {r.source === 'VET' ? 'Baytar' : 'Özüm'}
+                        {r.source === 'VET'
+                          ? `${r.vetAppointment?.vet?.clinicName ?? 'Baytar'} tərəfindən`
+                          : 'Pet sahibi tərəfindən'}
                       </span>
                     </li>
                   ))}

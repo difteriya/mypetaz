@@ -108,7 +108,9 @@ export default async function SharedPassportPage({ params }: { params: Promise<{
                 <li key={r.id}>
                   <span className="text-brand-900/50">{r.date.toISOString().slice(0, 10)}</span> ·{' '}
                   {HEALTH_LABEL[r.type] ?? r.type} · {r.name}{' '}
-                  <span className="text-brand-900/40">({r.source === 'VET' ? 'Baytar' : 'Özüm'})</span>
+                  <span className="text-brand-900/40">
+                    ({r.source === 'VET' ? 'Baytar tərəfindən' : 'Pet sahibi tərəfindən'})
+                  </span>
                 </li>
               ))}
             </ul>

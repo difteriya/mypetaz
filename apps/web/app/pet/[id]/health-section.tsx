@@ -46,9 +46,11 @@ export function HealthSection({ petId, records }: { petId: string; records: Heal
                   </span>
                   <span className="font-medium">{r.name}</span>
                   <span
-                    className={`text-xs ${r.source === 'VET' ? 'text-badge-sale' : 'text-brand-900/50'}`}
+                    className={`text-xs ${r.source === 'VET' ? 'text-teal-600' : 'text-brand-900/50'}`}
                   >
-                    {r.source === 'VET' ? `Baytar${r.vetLabel ? `: ${r.vetLabel}` : ''}` : 'Özüm'}
+                    {r.source === 'VET'
+                      ? `${r.vetLabel ?? 'Baytar'} tərəfindən`
+                      : 'Pet sahibi tərəfindən'}
                   </span>
                 </div>
                 <div className="mt-1 text-brand-900/60">
