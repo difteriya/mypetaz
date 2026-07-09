@@ -8,6 +8,7 @@ import { deletePetAction } from '@/lib/pets/actions';
 import { PassportSection } from './passport-section';
 import { HealthSection, type HealthRecordView } from './health-section';
 import { PetImages } from './pet-images';
+import { TransferForm } from './transfer-form';
 
 const toDateStr = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : '');
 
@@ -110,6 +111,7 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
       <div className="mt-4 space-y-4">
         <PassportSection petId={pet.id} passport={passportView} />
         <HealthSection petId={pet.id} records={healthRecords} />
+        <TransferForm petId={pet.id} />
       </div>
 
       <form action={deletePetAction} className="mt-8">

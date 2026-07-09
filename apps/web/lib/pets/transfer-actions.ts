@@ -21,18 +21,15 @@ export async function transferOwnershipAction(
   const session = await auth();
   if (!session?.user) redirect('/login');
 
-  const listingId = String(formData.get('listingId') ?? '');
+  const petId = String(formData.get('petId') ?? '');
   const buyerContact = String(formData.get('buyerContact') ?? '').trim();
   if (!buyerContact) return { error: 'Alıcının e-poçt və ya telefonunu daxil edin' };
 
-  const listing = await prisma.listing.findFirst({
-    where: { id: listingId, userId: session.user.id },
-    include: { pet: { select: { id: true, ownerId: true } } },
+  const pet = await prisma.pet.findFirst({
+    where: { id: petId, ownerId: session.user.id },
+    select: { id: true },
   });
-  if (!listing) return { error: 'Elan tapılmadı' };
-  if (listing.pet.ownerId !== session.user.id) {
-    return { error: 'Bu petin sahibi artıq siz deyilsiniz' };
-  }
+  if (!pet) return { error: 'Pet tapılmadı və ya sahibi siz deyilsiniz' };
 
   const buyer = await prisma.user.findFirst({
     where: {
@@ -43,19 +40,25 @@ export async function transferOwnershipAction(
   if (!buyer) return { error: 'Bu e-poçt/telefonla istifadəçi tapılmadı' };
   if (buyer.id === session.user.id) return { error: 'Peti özünüzə köçürə bilməzsiniz' };
 
+  // Finish + link any of the owner's live listings for this pet.
+  const listing = await prisma.listing.findFirst({
+    where: { petId: pet.id, userId: session.user.id, status: { in: ['ACTIVE', 'PENDING'] } },
+    select: { id: true },
+  });
+
   await prisma.$transaction([
-    prisma.pet.update({ where: { id: listing.pet.id }, data: { ownerId: buyer.id } }),
+    prisma.pet.update({ where: { id: pet.id }, data: { ownerId: buyer.id } }),
     // Old owner's shared links must not keep working without the new owner's consent.
-    prisma.petShareLink.updateMany({ where: { petId: listing.pet.id, active: true }, data: { active: false } }),
+    prisma.petShareLink.updateMany({ where: { petId: pet.id, active: true }, data: { active: false } }),
     prisma.ownershipTransfer.create({
       data: {
-        petId: listing.pet.id,
+        petId: pet.id,
         oldOwnerId: session.user.id,
         newOwnerId: buyer.id,
-        listingId: listing.id,
+        listingId: listing?.id ?? null,
       },
     }),
-    prisma.listing.update({ where: { id: listing.id }, data: { status: 'FINISHED' } }),
+    ...(listing ? [prisma.listing.update({ where: { id: listing.id }, data: { status: 'FINISHED' } })] : []),
   ]);
 
   await notify({

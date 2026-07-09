@@ -7,7 +7,6 @@ import { listMyListings } from '@/lib/listings/data';
 import { deleteListingAction } from '@/lib/listings/actions';
 import { listingTypeLabel } from '@/components/listings/listing-badge';
 import { PriceTag } from '@/components/listings/price-tag';
-import { TransferForm } from './transfer-form';
 
 export const metadata: Metadata = { title: 'Mənim elanlarım' };
 
@@ -69,7 +68,6 @@ export default async function MyListingsPage() {
                     </button>
                   </form>
                 </div>
-                {l.status === 'ACTIVE' && <TransferForm listingId={l.id} />}
               </li>
             );
           })}
