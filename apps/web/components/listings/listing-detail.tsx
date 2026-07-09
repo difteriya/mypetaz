@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
-import { getListingBySlug, getSimilarListings, getListingStatusBySlug } from '@/lib/listings/data';
+import { getListingBySlug, getSimilarListings, getListingStatusBySlug, countActiveListingsByUser } from '@/lib/listings/data';
 import { imageVariant } from '@/lib/images';
 import { ListingBadge, listingTypeLabel } from './listing-badge';
 import { ListingCard } from './listing-card';
@@ -16,7 +16,7 @@ import { listReviews, getReviewAggregate, getMyReview } from '@/lib/reviews/data
 import { ReviewSection } from '@/components/reviews/review-section';
 import { ReportButton } from '@/components/report-button';
 import { JsonLd, APP_URL } from '@/components/json-ld';
-import { PawIcon, CheckIcon } from '@/components/icons';
+import { PawIcon, CheckIcon, StarRating } from '@/components/icons';
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Erkək', FEMALE: 'Dişi', UNKNOWN: 'Bilinmir' };
 const card = 'rounded-card bg-white p-5 ring-1 ring-cream-200';
@@ -45,6 +45,7 @@ export async function ListingDetailView({ slug }: { slug: string }) {
   const [session, similar] = await Promise.all([auth(), getSimilarListings(listing)]);
   const canMessage = session?.user && session.user.id !== listing.userId;
   const favorited = session?.user ? await isFavorited(session.user.id, listing.id) : false;
+  const bizCount = business ? await countActiveListingsByUser(listing.userId) : 0;
   const [reviewAgg, reviews, myReview] = await Promise.all([
     getReviewAggregate('LISTING', listing.id),
     listReviews('LISTING', listing.id),
@@ -184,29 +185,72 @@ export async function ListingDetailView({ slug }: { slug: string }) {
             </div>
           </div>
 
-          <div className={`${card} space-y-3`}>
-            {business ? (
-              <Link href={`/business/${business.slug}`} className="flex items-center gap-1 font-semibold text-brand-700 hover:underline">
-                {business.name}
-                <CheckIcon className="size-4 rounded-full bg-teal-500 p-0.5 text-white" />
+          {business ? (
+            <div className={`${card} space-y-3`}>
+              <Link href={`/business/${business.slug}`} className="flex items-center gap-3">
+                <div className="size-14 shrink-0 overflow-hidden rounded-xl bg-cream-100">
+                  {business.logo ? (
+                    <img src={imageVariant(business.logo, 'thumb')} alt={business.logoAlt ?? business.name} className="size-full object-cover" />
+                  ) : (
+                    <div className="flex size-full items-center justify-center"><PawIcon className="size-6 text-brand-200" /></div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1 truncate font-semibold text-brand-700">
+                    {business.name}
+                    <CheckIcon className="size-4 shrink-0 rounded-full bg-teal-500 p-0.5 text-white" />
+                  </p>
+                  {business.reviewCount > 0 ? (
+                    <span className="flex items-center gap-1 text-xs text-ink/60">
+                      <StarRating value={business.avgRating ?? 0} className="[&_svg]:size-3.5" /> {business.avgRating?.toFixed(1)} ({business.reviewCount})
+                    </span>
+                  ) : (
+                    <span className="text-xs text-ink/50">Təsdiqlənmiş biznes</span>
+                  )}
+                </div>
               </Link>
-            ) : (
-              <p className="font-semibold text-ink">{listing.user.name ?? 'İstifadəçi'}</p>
-            )}
-            <PhoneReveal phone={listing.phone ?? ''} block />
-            {canMessage && (
-              <form action={startConversationAction}>
-                <input type="hidden" name="listingId" value={listing.id} />
-                <Button type="submit" variant="secondary" className="w-full">
-                  Mesaj göndər
-                </Button>
-              </form>
-            )}
-            <div className="flex items-center justify-between pt-1">
-              <FavoriteButton listingId={listing.id} initialFavorited={favorited} />
+              {(business.city || business.address) && (
+                <p className="text-sm text-ink/60">
+                  {[business.city?.name, business.address].filter(Boolean).join(', ')}
+                </p>
+              )}
+              <Link href={`/business/${business.slug}`} className="block text-sm font-semibold text-brand-600 hover:underline">
+                Biznesin bütün elanları ({bizCount}) →
+              </Link>
+              <div className="border-t border-cream-100 pt-3">
+                <PhoneReveal phone={listing.phone ?? ''} block />
+              </div>
+              {canMessage && (
+                <form action={startConversationAction}>
+                  <input type="hidden" name="listingId" value={listing.id} />
+                  <Button type="submit" variant="secondary" className="w-full">
+                    Mesaj göndər
+                  </Button>
+                </form>
+              )}
+              <div className="flex items-center justify-between pt-1">
+                <FavoriteButton listingId={listing.id} initialFavorited={favorited} />
+              </div>
+              <ReportButton targetType="LISTING" targetId={listing.id} />
             </div>
-            <ReportButton targetType="LISTING" targetId={listing.id} />
-          </div>
+          ) : (
+            <div className={`${card} space-y-3`}>
+              <p className="font-semibold text-ink">{listing.user.name ?? 'İstifadəçi'}</p>
+              <PhoneReveal phone={listing.phone ?? ''} block />
+              {canMessage && (
+                <form action={startConversationAction}>
+                  <input type="hidden" name="listingId" value={listing.id} />
+                  <Button type="submit" variant="secondary" className="w-full">
+                    Mesaj göndər
+                  </Button>
+                </form>
+              )}
+              <div className="flex items-center justify-between pt-1">
+                <FavoriteButton listingId={listing.id} initialFavorited={favorited} />
+              </div>
+              <ReportButton targetType="LISTING" targetId={listing.id} />
+            </div>
+          )}
         </aside>
       </div>
 

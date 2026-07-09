@@ -103,12 +103,26 @@ export function getListingBySlug(slug: string) {
           name: true,
           accountType: true,
           businessProfile: {
-            select: { name: true, slug: true, logo: true, logoAlt: true },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logo: true,
+              logoAlt: true,
+              address: true,
+              avgRating: true,
+              reviewCount: true,
+              city: { select: { name: true } },
+            },
           },
         },
       },
     },
   });
+}
+
+export function countActiveListingsByUser(userId: string) {
+  return prisma.listing.count({ where: { userId, status: 'ACTIVE' } });
 }
 
 export type ListingDetail = NonNullable<Awaited<ReturnType<typeof getListingBySlug>>>;
