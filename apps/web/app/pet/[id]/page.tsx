@@ -4,10 +4,10 @@ import { notFound, redirect } from 'next/navigation';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
 import { getPetForOwner } from '@/lib/pets/data';
-import { imageVariant } from '@/lib/images';
 import { deletePetAction } from '@/lib/pets/actions';
 import { PassportSection } from './passport-section';
 import { HealthSection, type HealthRecordView } from './health-section';
+import { PetImages } from './pet-images';
 
 const toDateStr = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : '');
 
@@ -81,22 +81,12 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
         </Link>
       </div>
 
-      {pet.images.length > 0 ? (
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {pet.images.map((img) => (
-            <img
-              key={img.id}
-              src={imageVariant(img.url, 'detail')}
-              alt={img.alt}
-              className="aspect-square w-full rounded-card object-cover"
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="mt-4 flex aspect-video items-center justify-center rounded-card bg-cream-100 text-6xl text-brand-200">
-          🐾
-        </div>
-      )}
+      <div className="mt-4">
+        <PetImages
+          petId={pet.id}
+          images={pet.images.map((img) => ({ id: img.id, url: img.url, alt: img.alt }))}
+        />
+      </div>
 
       <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-card bg-white p-5 text-sm">
         {rows.map(([label, value]) => (

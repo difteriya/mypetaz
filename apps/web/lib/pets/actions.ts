@@ -108,6 +108,62 @@ export async function createPetAction(
   redirect(`/pet/${pet.id}`);
 }
 
+export async function addPetImagesAction(
+  _prev: PetActionState,
+  formData: FormData,
+): Promise<PetActionState> {
+  const session = await auth();
+  if (!session?.user) redirect('/login');
+
+  const petId = String(formData.get('petId') ?? '');
+  const pet = await prisma.pet.findFirst({
+    where: { id: petId, ownerId: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      category: { select: { name: true } },
+      breed: { select: { name: true } },
+      _count: { select: { images: true } },
+    },
+  });
+  if (!pet) return { error: 'Pet tapılmadı' };
+
+  const files = formData.getAll('images').filter((f): f is File => f instanceof File && f.size > 0);
+  if (files.length === 0) return { error: 'Şəkil seçin' };
+
+  const altBase = pet.breed?.name ? `${pet.name}, ${pet.breed.name}` : `${pet.name}, ${pet.category.name}`;
+  let order = pet._count.images;
+  for (const file of files.slice(0, MAX_IMAGES)) {
+    try {
+      const { stem } = await processImage(file, 'pets', altBase);
+      await prisma.petImage.create({
+        data: { petId: pet.id, url: stem, alt: `${altBase} — şəkil ${order + 1}`, order },
+      });
+      order += 1;
+    } catch (err) {
+      console.error('[addPetImages] skipped:', (err as Error).message);
+    }
+  }
+  revalidatePath(`/pet/${pet.id}`);
+  return undefined;
+}
+
+export async function deletePetImageAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (!session?.user) redirect('/login');
+
+  const imageId = String(formData.get('imageId') ?? '');
+  const img = await prisma.petImage.findFirst({
+    where: { id: imageId, pet: { ownerId: session.user.id } },
+    select: { id: true, url: true, petId: true },
+  });
+  if (img) {
+    await removeImage(img.url);
+    await prisma.petImage.delete({ where: { id: img.id } });
+    revalidatePath(`/pet/${img.petId}`);
+  }
+}
+
 export async function deletePetAction(formData: FormData): Promise<void> {
   const session = await auth();
   if (!session?.user) redirect('/login');

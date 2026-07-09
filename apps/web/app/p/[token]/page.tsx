@@ -40,15 +40,17 @@ export default async function SharedPassportPage({ params }: { params: Promise<{
         <p className="text-xs text-brand-900/40">mypet.az — Pet Pasportu</p>
         <h1 className="mt-1 text-3xl font-bold text-brand-700">{pet.name}</h1>
 
+        {/* Pet photo always shown on the passport when available. */}
+        {pet.images.length > 0 && (
+          <img
+            src={imageVariant(pet.images[0]!.url, 'detail')}
+            alt={pet.images[0]!.alt}
+            className="mt-4 aspect-video w-full rounded-card object-cover"
+          />
+        )}
+
         {fields.basicInfo && (
           <>
-            {pet.images.length > 0 && (
-              <img
-                src={imageVariant(pet.images[0]!.url, 'detail')}
-                alt={pet.images[0]!.alt}
-                className="mt-4 aspect-video w-full rounded-card object-cover"
-              />
-            )}
             <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
               <dt className="text-brand-900/50">Kateqoriya</dt>
               <dd>{pet.category.name}</dd>

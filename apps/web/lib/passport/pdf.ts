@@ -48,8 +48,8 @@ export async function buildPassportPdf(shared: SharedPet): Promise<Uint8Array> {
   line(pet.name, 24, BRAND);
   y -= 4;
 
-  // Cover image (basic info)
-  if (fields.basicInfo && pet.images[0]) {
+  // Pet photo — always included when available.
+  if (pet.images[0]) {
     try {
       const webp = await readFile(stemToFile(pet.images[0].url, 'card'));
       const png = await sharp(webp).png().toBuffer();

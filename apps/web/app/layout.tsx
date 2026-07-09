@@ -4,6 +4,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { getBlockMap } from '@/lib/cms/data';
 import { SiteHeader } from '@/components/site/site-header';
 import { SiteFooter } from '@/components/site/site-footer';
+import { AccountNav } from '@/components/site/account-nav';
 import { AdHeader, AdBackground } from '@/components/site/site-ads';
 import './globals.css';
 
@@ -39,6 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AdBackground global={global.raw} />
         <AdHeader global={global.raw} />
         <SiteHeader />
+        <AccountNav />
         {/* Boxed content column — its opaque background covers the ad in the
             centre; only the left/right strips remain visible (PLAN.md §5.1). */}
         <div className="relative mx-auto min-h-[60vh] max-w-[1280px] bg-cream-100">{children}</div>

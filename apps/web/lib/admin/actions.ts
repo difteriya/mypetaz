@@ -6,6 +6,7 @@ import { prisma } from '@mypet/db';
 import { auth } from '@mypet/auth';
 import { recomputeBusinessRating } from '@/lib/reviews/data';
 import { notify } from '@/lib/notifications/service';
+import { hashPassword } from '@mypet/auth/password';
 
 async function assertAdmin() {
   const session = await auth();
@@ -208,6 +209,36 @@ export async function deactivateReportedContentAction(fd: FormData) {
 }
 
 // ---- Users ----
+const ROLES = ['USER', 'VET', 'ADMIN'];
+
+export async function createUserAction(fd: FormData) {
+  await assertAdmin();
+  const email = String(fd.get('email') ?? '').trim().toLowerCase();
+  const name = String(fd.get('name') ?? '').trim() || null;
+  const password = String(fd.get('password') ?? '');
+  const role = String(fd.get('role') ?? 'USER');
+  if (!email || password.length < 8 || !ROLES.includes(role)) return;
+
+  const exists = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (exists) return;
+
+  await prisma.user.create({
+    data: { email, name, role: role as 'USER' | 'VET' | 'ADMIN', passwordHash: await hashPassword(password) },
+  });
+  revalidatePath('/admin/users');
+}
+
+export async function deleteUserAction(fd: FormData) {
+  const session = await assertAdmin();
+  const userId = id(fd);
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  // Never delete admins or yourself.
+  if (target && target.role !== 'ADMIN' && userId !== session!.user.id) {
+    await prisma.user.delete({ where: { id: userId } });
+    revalidatePath('/admin/users');
+  }
+}
+
 export async function setUserBlockedAction(fd: FormData) {
   await assertAdmin();
   const userId = id(fd);
