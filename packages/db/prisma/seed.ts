@@ -252,6 +252,8 @@ const CONTENT_BLOCKS: BlockSeed[] = [
   { key: 'ad_header_link', page: 'GLOBAL', type: 'URL', value: '', order: 1 },
   { key: 'ad_background', page: 'GLOBAL', type: 'IMAGE', value: '', order: 2 },
   { key: 'ad_background_link', page: 'GLOBAL', type: 'URL', value: '', order: 3 },
+  { key: 'terms_content', page: 'GLOBAL', type: 'RICHTEXT', value: 'İstifadə şərtləri tezliklə əlavə olunacaq.', order: 10 },
+  { key: 'privacy_content', page: 'GLOBAL', type: 'RICHTEXT', value: 'Məxfilik siyasəti tezliklə əlavə olunacaq.', order: 11 },
 ];
 
 async function main() {

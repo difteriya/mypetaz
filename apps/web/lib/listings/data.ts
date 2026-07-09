@@ -68,6 +68,15 @@ export function getActiveListings(filter: ListingFilter) {
   });
 }
 
+export function getLatestListings(take = 8) {
+  return prisma.listing.findMany({
+    where: { status: 'ACTIVE' },
+    include: cardInclude,
+    orderBy: { createdAt: 'desc' },
+    take,
+  });
+}
+
 export function getFeaturedListings(take = 8) {
   return prisma.listing.findMany({
     where: { status: 'ACTIVE', featured: true },
