@@ -13,6 +13,7 @@
     "deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "seed": "tsx prisma/seed.ts",
+    "seed:demo": "tsx prisma/seed-demo.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
