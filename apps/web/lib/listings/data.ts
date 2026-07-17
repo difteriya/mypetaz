@@ -86,47 +86,51 @@ export function getFeaturedListings(take = 8) {
   });
 }
 
-export function getListingBySlug(slug: string) {
-  return prisma.listing.findFirst({
-    where: { slug, status: 'ACTIVE' },
+const detailInclude = {
+  pet: {
     include: {
-      pet: {
+      images: { orderBy: { order: 'asc' } },
+      category: { include: { fields: { where: { active: true }, orderBy: { order: 'asc' } } } },
+      breed: true,
+      passport: true,
+      healthRecords: {
+        orderBy: { date: 'desc' },
         include: {
-          images: { orderBy: { order: 'asc' } },
-          category: { include: { fields: { where: { active: true }, orderBy: { order: 'asc' } } } },
-          breed: true,
-          passport: true,
-          healthRecords: {
-            orderBy: { date: 'desc' },
-            include: {
-              addedBy: { select: { id: true, name: true } },
-              vetAppointment: { select: { vet: { select: { clinicName: true } } } },
-            },
-          },
-        },
-      },
-      city: true,
-      user: {
-        select: {
-          name: true,
-          accountType: true,
-          businessProfile: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              logo: true,
-              logoAlt: true,
-              address: true,
-              avgRating: true,
-              reviewCount: true,
-              city: { select: { name: true } },
-            },
-          },
+          addedBy: { select: { id: true, name: true } },
+          vetAppointment: { select: { vet: { select: { clinicName: true } } } },
         },
       },
     },
-  });
+  },
+  city: true,
+  user: {
+    select: {
+      name: true,
+      accountType: true,
+      businessProfile: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          logo: true,
+          logoAlt: true,
+          address: true,
+          avgRating: true,
+          reviewCount: true,
+          city: { select: { name: true } },
+        },
+      },
+    },
+  },
+} satisfies Prisma.ListingInclude;
+
+export function getListingBySlug(slug: string) {
+  return prisma.listing.findFirst({ where: { slug, status: 'ACTIVE' }, include: detailInclude });
+}
+
+/** Any-status lookup for admin preview (a PENDING/REJECTED listing isn't public). */
+export function getListingBySlugForAdmin(slug: string) {
+  return prisma.listing.findFirst({ where: { slug }, include: detailInclude });
 }
 
 export function countActiveListingsByUser(userId: string) {

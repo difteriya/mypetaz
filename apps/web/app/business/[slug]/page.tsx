@@ -12,6 +12,7 @@ import { parseBusinessHours, isOpenNow, DAYS } from '@/lib/business/hours';
 import { imageVariant } from '@/lib/images';
 import { PhoneReveal } from '@/components/listings/phone-reveal';
 import { ListingCard } from '@/components/listings/listing-card';
+import { LocationMap } from '@/components/business/location-map';
 
 export async function generateMetadata({
   params,
@@ -116,17 +117,12 @@ export default async function BusinessStorefront({ params }: { params: Promise<{
       )}
 
       {(business.address || (business.lat != null && business.lng != null)) && (
-        <div className="mt-4 rounded-card bg-white p-5 text-sm">
-          {business.address && <p>{business.address}</p>}
+        <div className="mt-4 space-y-3 rounded-card bg-white p-5 text-sm">
+          {business.address && (
+            <p className="font-medium text-ink">{business.address}</p>
+          )}
           {business.lat != null && business.lng != null && (
-            <details className="mt-2">
-              <summary className="cursor-pointer font-semibold text-brand-600">Xəritədə göstər</summary>
-              <iframe
-                title="Xəritə"
-                className="mt-2 h-72 w-full rounded-card border border-cream-200"
-                src={`https://www.openstreetmap.org/export/embed.html?bbox=${business.lng - 0.01}%2C${business.lat - 0.01}%2C${business.lng + 0.01}%2C${business.lat + 0.01}&marker=${business.lat}%2C${business.lng}`}
-              />
-            </details>
+            <LocationMap lat={business.lat} lng={business.lng} label={business.name} />
           )}
         </div>
       )}

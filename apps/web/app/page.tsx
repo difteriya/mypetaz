@@ -6,13 +6,11 @@ import {
   getCategoriesWithBreeds,
   getCategoryListingCounts,
 } from '@/lib/listings/data';
-import { CategoryIcon } from '@/components/category-icons';
 import { getBlockMap } from '@/lib/cms/data';
 import { imageVariant } from '@/lib/images';
 import { ListingCard } from '@/components/listings/listing-card';
 import { JsonLd, APP_URL } from '@/components/json-ld';
-import { LISTING_TYPES } from '@/lib/listings/schema';
-import { listingTypeLabel } from '@/components/listings/listing-badge';
+import { HeroSearch } from '@/components/home/hero-search';
 
 export default async function HomePage() {
   const [featured, latest, categories, catCounts, home] = await Promise.all([
@@ -22,10 +20,7 @@ export default async function HomePage() {
     getCategoryListingCounts(),
     getBlockMap('HOME'),
   ]);
-  const leftImg = home.get('hero_left_image');
-  const rightImg = home.get('hero_right_image');
-  const fieldLabel = 'mb-1 block text-xs font-bold text-ink/60';
-  const fieldBox = 'w-full rounded-xl border border-cream-200 bg-white px-3 py-2.5 text-ink outline-none focus:border-brand-400';
+  const heroImg = home.get('hero_image');
 
   return (
     <main className="px-4 py-8">
@@ -33,93 +28,56 @@ export default async function HomePage() {
         data={{ '@context': 'https://schema.org', '@type': 'Organization', name: 'mypet.az', url: APP_URL }}
       />
 
-      {/* Hero — full-bleed band with lifestyle images left & right */}
+      {/* Hero — full-bleed band with an editable background image (CMS: hero_image) */}
       <section className="relative left-1/2 -mt-8 w-screen -translate-x-1/2 overflow-hidden bg-gradient-to-b from-cream-200 to-cream-50">
-        <div className="pointer-events-none absolute -right-24 top-0 size-[26rem] rounded-full bg-white/50" />
-        {leftImg && (
-          <img
-            src={imageVariant(leftImg, 'detail')}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute bottom-0 left-0 hidden h-[92%] w-auto object-contain lg:block"
-          />
+        {heroImg && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageVariant(heroImg, 'full')}
+              alt=""
+              aria-hidden
+              className="pointer-events-none absolute inset-0 size-full object-cover"
+            />
+            {/* Light overlay keeps the dark title + white search card readable over any photo */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-cream-50/85 via-cream-50/70 to-cream-50/90" />
+          </>
         )}
-        {rightImg && (
-          <img
-            src={imageVariant(rightImg, 'detail')}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute bottom-0 right-0 hidden h-[92%] w-auto object-contain lg:block"
-          />
-        )}
+        <div className="pointer-events-none absolute -right-24 top-0 size-[26rem] rounded-full bg-white/40" />
 
-        <div className="relative z-10 mx-auto max-w-3xl px-4 py-14 text-center sm:py-20">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 py-16 text-center sm:py-24">
           <span className="text-sm font-bold uppercase tracking-wider text-teal-500">
             Ev Heyvanları Üçün Yeni Nəsil Platforma.
           </span>
-          <h1 className="mt-3 text-4xl font-extrabold text-ink sm:text-6xl">
+          <h1 className="mt-3 text-4xl font-extrabold text-ink drop-shadow-sm sm:text-6xl">
             {home.get('hero_title', 'Bir Pati Min Xoşbəxtlik')}
           </h1>
 
-          {/* Search card */}
-          <form
-            action="/listings"
-            method="get"
-            className="mx-auto mt-8 grid max-w-2xl gap-3 rounded-2xl bg-white p-4 text-left shadow-soft sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end"
-          >
-            <div>
-              <label htmlFor="h-cat" className={fieldLabel}>
-                Kateqoriya
-              </label>
-              <select id="h-cat" name="categoryId" defaultValue="" className={fieldBox}>
-                <option value="">Kateqoriya seçin</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="h-type" className={fieldLabel}>
-                Tip
-              </label>
-              <select id="h-type" name="type" defaultValue="" className={fieldBox}>
-                <option value="">Tipi seçin</option>
-                {LISTING_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {listingTypeLabel(t)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="h-q" className={fieldLabel}>
-                Açar söz
-              </label>
-              <input id="h-q" name="q" placeholder="Açar sözlərinizi daxil edin…" className={fieldBox} />
-            </div>
-            <Button type="submit" className="h-[42px]">
-              Axtar
-            </Button>
-          </form>
+          <HeroSearch categories={categories} />
         </div>
       </section>
 
-      {/* Categories */}
+      {/* Categories — Avito-style image cards (name left, animal right) */}
       <section className="mt-14">
         <h2 className="mb-5 text-2xl font-extrabold text-ink">Kateqoriyalar</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+        {/* Desktop: 7-column grid · Tablet/phone: swipeable carousel */}
+        <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:grid lg:grid-cols-7 lg:overflow-visible lg:px-0 lg:pb-0">
           {categories.map((c) => (
             <Link
               key={c.id}
               href={`/listings?categoryId=${c.id}`}
-              className="flex flex-col items-center gap-3 rounded-3xl bg-white p-5 text-center ring-1 ring-cream-200 transition-all hover:-translate-y-1 hover:shadow-soft"
+              className="group relative aspect-[468/270] min-w-[76%] shrink-0 snap-start overflow-hidden rounded-2xl bg-[#eff0f1] ring-1 ring-cream-200 transition-all hover:-translate-y-1 hover:shadow-soft sm:min-w-[43%] lg:min-w-0 lg:shrink"
             >
-              <CategoryIcon slug={c.slug} className="size-14" />
-              <span className="font-bold text-ink">
-                {c.name} <span className="font-semibold text-ink/40">({catCounts[c.id] ?? 0})</span>
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/categories/${c.slug}.webp`}
+                alt={c.name}
+                className="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="absolute left-4 top-3.5 lg:left-3 lg:top-3">
+                <span className="text-base font-extrabold text-ink lg:text-sm">{c.name}</span>
+                <span className="mt-0.5 block text-xs font-semibold text-ink/45">{catCounts[c.id] ?? 0} elan</span>
+              </div>
             </Link>
           ))}
         </div>

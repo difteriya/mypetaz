@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Button } from '@mypet/ui';
 import { PawIcon } from '@/components/icons';
+import { NotificationBell } from './notification-bell';
 
 // Auth is checked client-side so the root layout stays static/ISR-friendly
 // (public pages don't depend on the session — PLAN.md §8.5).
 export function SiteHeader() {
+  const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -19,7 +22,7 @@ export function SiteHeader() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-cream-200 bg-cream-50/90 backdrop-blur">
@@ -44,6 +47,7 @@ export function SiteHeader() {
           <Link href="/post-listing">
             <Button size="sm">Elan yerləşdir</Button>
           </Link>
+          {loggedIn && <NotificationBell />}
           <Link href={loggedIn ? '/dashboard' : '/login'}>
             <Button size="sm" variant="secondary">
               {loggedIn ? 'Profil' : 'Daxil ol'}

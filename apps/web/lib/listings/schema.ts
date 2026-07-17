@@ -4,6 +4,9 @@ const emptyToUndefined = (v: unknown) => (v === '' || v == null ? undefined : v)
 
 export const LISTING_TYPES = ['SALE', 'ADOPTION', 'LOST_FOUND', 'MATING'] as const;
 
+// Sentinel value for the pet dropdown's "create a new pet inline" option.
+export const NEW_PET = '__new__';
+
 // Create a listing for an existing pet (PLAN.md §2.4). A listing is a pointer
 // to a pet profile — data isn't duplicated.
 export const listingCreateSchema = z
@@ -15,8 +18,6 @@ export const listingCreateSchema = z
     price: z.preprocess(emptyToUndefined, z.coerce.number().nonnegative().max(1_000_000).optional()),
     cityId: z.preprocess(emptyToUndefined, z.string().optional()),
     address: z.preprocess(emptyToUndefined, z.string().trim().max(200).optional()),
-    lat: z.preprocess(emptyToUndefined, z.coerce.number().min(-90).max(90).optional()),
-    lng: z.preprocess(emptyToUndefined, z.coerce.number().min(-180).max(180).optional()),
     phone: z.string().trim().min(7, 'Telefon nömrəsi tələb olunur').max(20),
   })
   .superRefine((val, ctx) => {

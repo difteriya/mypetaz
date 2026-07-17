@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import {
   getBlogCategoryBySlug,
   getPostBySlug,
   listPublishedPosts,
 } from '@/lib/blog/data';
+import { resolveSlugRedirect } from '@/lib/admin/slug-redirect';
 import { imageVariant } from '@/lib/images';
 import { BlogPostCard } from '@/components/blog/post-card';
 import { ReportButton } from '@/components/report-button';
@@ -65,7 +66,11 @@ export default async function BlogSegmentPage({ params }: { params: Promise<{ se
 
   // 2) post detail
   const post = await getPostBySlug(segment);
-  if (!post) notFound();
+  if (!post) {
+    const to = await resolveSlugRedirect('blogCategory', segment);
+    if (to) permanentRedirect(`/blog/${to}`);
+    notFound();
+  }
 
   const author = post.user.businessProfile;
 

@@ -3,8 +3,10 @@
 import { useActionState, useState } from 'react';
 import { Button } from '@mypet/ui';
 import { createListingAction } from '@/lib/listings/actions';
-import { LISTING_TYPES } from '@/lib/listings/schema';
+import { LISTING_TYPES, NEW_PET } from '@/lib/listings/schema';
 import { listingTypeLabel } from '@/components/listings/listing-badge';
+import { PetFieldset } from '@/components/pets/pet-fieldset';
+import type { CategoryForForm } from '@/lib/pets/data';
 
 const inputClass =
   'w-full rounded-lg border border-cream-200 bg-white px-3 py-2 outline-none focus:border-brand-400';
@@ -20,12 +22,17 @@ interface PetOpt {
 export function PostListingForm({
   pets,
   cities,
+  categories,
 }: {
   pets: PetOpt[];
   cities: { id: string; name: string }[];
+  categories: CategoryForForm[];
 }) {
   const [state, formAction, pending] = useActionState(createListingAction, undefined);
   const [type, setType] = useState<string>('SALE');
+  // Default to inline creation when the user has no pets yet.
+  const [petId, setPetId] = useState<string>(pets.length === 0 ? NEW_PET : '');
+  const creatingPet = petId === NEW_PET;
 
   return (
     <form action={formAction} className="space-y-4">
@@ -33,7 +40,14 @@ export function PostListingForm({
         <label htmlFor="petId" className={labelClass}>
           Pet <span className="text-badge-lostfound">*</span>
         </label>
-        <select id="petId" name="petId" required className={inputClass} defaultValue="">
+        <select
+          id="petId"
+          name="petId"
+          required
+          className={inputClass}
+          value={petId}
+          onChange={(e) => setPetId(e.target.value)}
+        >
           <option value="" disabled>
             Seçin…
           </option>
@@ -43,8 +57,15 @@ export function PostListingForm({
               {p.breed ? ` — ${p.breed.name}` : ''}
             </option>
           ))}
+          <option value={NEW_PET}>+ Yeni pet əlavə et</option>
         </select>
       </div>
+
+      {creatingPet && (
+        <div className="rounded-card border border-cream-200 bg-cream-50/60 p-4">
+          <PetFieldset categories={categories} descriptionName="petDescription" />
+        </div>
+      )}
 
       <div className="space-y-1">
         <label htmlFor="type" className={labelClass}>
@@ -113,20 +134,6 @@ export function PostListingForm({
             Ünvan
           </label>
           <input id="address" name="address" maxLength={200} className={inputClass} />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <label htmlFor="lat" className={labelClass}>
-              En dairəsi (lat)
-            </label>
-            <input id="lat" name="lat" type="number" step="any" className={inputClass} />
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="lng" className={labelClass}>
-              Uzunluq (lng)
-            </label>
-            <input id="lng" name="lng" type="number" step="any" className={inputClass} />
-          </div>
         </div>
       </div>
 

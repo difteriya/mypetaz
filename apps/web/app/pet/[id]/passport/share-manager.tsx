@@ -52,6 +52,9 @@ function LinkRow({ link }: { link: ShareLinkView }) {
         <a href={`/p/${link.token}/pdf`} className="text-xs text-brand-600 hover:underline">
           PDF
         </a>
+        <a href={`/p/${link.token}/mini`} className="text-xs text-brand-600 hover:underline">
+          Mini
+        </a>
         <form action={toggleShareLinkAction}>
           <input type="hidden" name="linkId" value={link.id} />
           <button type="submit" className="text-xs text-brand-600 hover:underline">

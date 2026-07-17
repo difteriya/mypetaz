@@ -36,6 +36,59 @@ export function recentActiveListings() {
   });
 }
 
+// ── Full lists (every status) for the admin catalog views ──
+
+export function allListings() {
+  return prisma.listing.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+    include: { pet: { select: { category: { select: { name: true } } } }, user: { select: { name: true, email: true } } },
+  });
+}
+
+export function allBusinesses() {
+  return prisma.businessProfile.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+    include: { user: { select: { name: true, email: true } }, city: { select: { name: true } } },
+  });
+}
+
+export function allBlogPosts() {
+  return prisma.blogPost.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+    include: { category: { select: { name: true } }, user: { select: { name: true } } },
+  });
+}
+
+export function allReports() {
+  return prisma.report.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+    include: { reporter: { select: { name: true, email: true } } },
+  });
+}
+
+export async function allReviews() {
+  const reviews = await prisma.review.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+    include: { user: { select: { name: true } } },
+  });
+  const listingIds = reviews.filter((r) => r.targetType === 'LISTING').map((r) => r.targetId);
+  const bizIds = reviews.filter((r) => r.targetType === 'BUSINESS').map((r) => r.targetId);
+  const [listings, businesses] = await Promise.all([
+    prisma.listing.findMany({ where: { id: { in: listingIds } }, select: { id: true, title: true } }),
+    prisma.businessProfile.findMany({ where: { id: { in: bizIds } }, select: { id: true, name: true } }),
+  ]);
+  const labels = new Map<string, string>([
+    ...listings.map((l) => [l.id, l.title] as const),
+    ...businesses.map((b) => [b.id, b.name] as const),
+  ]);
+  return reviews.map((r) => ({ ...r, targetLabel: labels.get(r.targetId) ?? r.targetId }));
+}
+
 export function pendingBusinesses() {
   return prisma.businessProfile.findMany({
     where: { status: 'PENDING' },

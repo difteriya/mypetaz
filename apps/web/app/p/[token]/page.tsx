@@ -126,9 +126,12 @@ export default async function SharedPassportPage({ params }: { params: Promise<{
           </section>
         )}
 
-        <div className="mt-6 border-t border-cream-200 pt-4">
+        <div className="mt-6 flex flex-wrap gap-4 border-t border-cream-200 pt-4">
           <a href={`/p/${token}/pdf`} className="text-sm font-semibold text-brand-600 hover:underline">
-            PDF yüklə
+            Böyük PDF yüklə
+          </a>
+          <a href={`/p/${token}/mini`} className="text-sm font-semibold text-brand-600 hover:underline">
+            Mini pasport (kart)
           </a>
         </div>
       </div>

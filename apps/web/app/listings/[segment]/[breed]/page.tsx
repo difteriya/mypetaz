@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import {
   getPetCategoryBySlug,
   getBreedBySlugInCategory,
   getActiveListings,
 } from '@/lib/listings/data';
+import { resolveSlugRedirect } from '@/lib/admin/slug-redirect';
 import { ListingCard } from '@/components/listings/listing-card';
 import { JsonLd, APP_URL } from '@/components/json-ld';
 
@@ -36,7 +37,11 @@ export default async function BreedLandingPage({
   const category = await getPetCategoryBySlug(segment);
   if (!category) notFound();
   const b = await getBreedBySlugInCategory(category.id, breed);
-  if (!b) notFound();
+  if (!b) {
+    const to = await resolveSlugRedirect(`breed:${category.id}`, breed);
+    if (to) permanentRedirect(`/listings/${category.slug}/${to}`);
+    notFound();
+  }
 
   const listings = await getActiveListings({ categoryId: category.id, breedId: b.id });
 

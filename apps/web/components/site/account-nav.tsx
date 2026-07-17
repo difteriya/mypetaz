@@ -40,7 +40,7 @@ export function AccountNav() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [pathname]);
 
   const onAccount = ACCOUNT_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   if (!onAccount || !loggedIn) return null;

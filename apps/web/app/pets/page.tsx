@@ -42,7 +42,7 @@ export default async function MyPetsPage() {
             return (
               <Link
                 key={pet.id}
-                href={`/pet/${pet.id}`}
+                href={`/pet/${pet.slug ?? pet.id}`}
                 className="overflow-hidden rounded-card border border-cream-200 bg-white transition-shadow hover:shadow-md"
               >
                 <div className="aspect-square bg-cream-100">

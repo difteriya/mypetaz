@@ -48,10 +48,10 @@ export function getMyTransfersArchive(oldOwnerId: string) {
   });
 }
 
-/** A single pet, scoped to its owner (full view). */
-export function getPetForOwner(id: string, ownerId: string) {
+/** A single pet, scoped to its owner (full view). Accepts a slug or an id. */
+export function getPetForOwner(handle: string, ownerId: string) {
   return prisma.pet.findFirst({
-    where: { id, ownerId },
+    where: { ownerId, OR: [{ id: handle }, { slug: handle }] },
     include: {
       category: {
         include: { fields: { where: { active: true }, orderBy: { order: 'asc' } } },

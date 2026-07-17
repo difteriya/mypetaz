@@ -40,7 +40,7 @@ export async function createShareLinkAction(
     },
   });
 
-  revalidatePath(`/pet/${petId}/passport`);
+  revalidatePath('/pet/[id]/passport', 'page');
   return { ok: 'Paylaşım linki yaradıldı' };
 }
 
@@ -55,7 +55,7 @@ export async function toggleShareLinkAction(formData: FormData): Promise<void> {
   });
   if (link) {
     await prisma.petShareLink.update({ where: { id: link.id }, data: { active: !link.active } });
-    revalidatePath(`/pet/${link.petId}/passport`);
+    revalidatePath('/pet/[id]/passport', 'page');
   }
 }
 
@@ -70,6 +70,6 @@ export async function deleteShareLinkAction(formData: FormData): Promise<void> {
   });
   if (link) {
     await prisma.petShareLink.delete({ where: { id: link.id } });
-    revalidatePath(`/pet/${link.petId}/passport`);
+    revalidatePath('/pet/[id]/passport', 'page');
   }
 }

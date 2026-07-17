@@ -17,6 +17,10 @@ export function AdminNav({
     { href: '/admin/reviews', label: 'Rəylər', badge: counts.reviews },
     { href: '/admin/reports', label: 'Şikayətlər', badge: counts.reports },
     { href: '/admin/transfers', label: 'Köçürmələr', badge: 0 },
+    { href: '/admin/breeds', label: 'Cinslər', badge: 0 },
+    { href: '/admin/category-fields', label: 'Sahələr', badge: 0 },
+    { href: '/admin/service-categories', label: 'Xidmətlər', badge: 0 },
+    { href: '/admin/blog-categories', label: 'Bloq kat.', badge: 0 },
     { href: '/admin/content', label: 'Kontent', badge: 0 },
     { href: '/admin/users', label: 'İstifadəçilər', badge: 0 },
   ];

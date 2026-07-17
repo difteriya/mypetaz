@@ -346,6 +346,19 @@ model Breed {
 
 // Admin-managed dynamic field definitions per category (PLAN.md §2.2 / §4.1).
 // The runtime Zod builder turns these rows into a form + validator.
+/// Old→new slug map so renamed taxonomy URLs 308-redirect instead of 404ing.
+/// scope namespaces the lookup, e.g. "blogCategory" or "breed:<categoryId>".
+model SlugRedirect {
+  id        String   @id @default(cuid())
+  scope     String
+  fromSlug  String
+  toSlug    String
+  createdAt DateTime @default(now())
+
+  @@unique([scope, fromSlug])
+  @@map("slug_redirects")
+}
+
 model PetCategoryField {
   id         String               @id @default(cuid())
   categoryId String
@@ -370,6 +383,7 @@ model Pet {
   breedId       String? // null for "Qarışıq/Bilinmir" or free-text categories
   breedFreeText String? // for "Digər" category (PLAN.md §2.2.1)
   name          String
+  slug          String? @unique // readable URL handle, e.g. "toby-golden-retriever"
   birthDate     DateTime?
   birthApprox   Boolean   @default(false) // true = birthDate is an approximation
   sex           PetSex    @default(UNKNOWN)

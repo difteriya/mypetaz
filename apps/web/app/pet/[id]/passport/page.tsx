@@ -20,7 +20,7 @@ export default async function PassportSharePage({ params }: { params: Promise<{ 
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
-      <Link href={`/pet/${pet.id}`} className="text-sm text-brand-600 hover:underline">
+      <Link href={`/pet/${pet.slug ?? pet.id}`} className="text-sm text-brand-600 hover:underline">
         ← {pet.name}
       </Link>
       <h1 className="mb-2 mt-2 text-2xl font-bold text-brand-700">Pasportu paylaş</h1>

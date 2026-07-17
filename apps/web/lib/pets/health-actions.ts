@@ -70,7 +70,7 @@ export async function savePassportAction(
     },
   });
 
-  revalidatePath(`/pet/${pet.id}`);
+  revalidatePath('/pet/[id]', 'page');
   return { ok: true };
 }
 
@@ -108,7 +108,7 @@ export async function addHealthRecordAction(
     },
   });
 
-  revalidatePath(`/pet/${pet.id}`);
+  revalidatePath('/pet/[id]', 'page');
   return { ok: true };
 }
 
@@ -124,6 +124,6 @@ export async function deleteHealthRecordAction(formData: FormData): Promise<void
   // Only owner-added records can be deleted here; vet records are managed by the vet.
   if (record && record.source === 'SELF') {
     await prisma.petHealthRecord.delete({ where: { id: record.id } });
-    revalidatePath(`/pet/${record.petId}`);
+    revalidatePath('/pet/[id]', 'page');
   }
 }

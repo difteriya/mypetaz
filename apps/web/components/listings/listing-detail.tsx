@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { auth } from '@mypet/auth';
 import { Button } from '@mypet/ui';
-import { getListingBySlug, getSimilarListings, getListingStatusBySlug, countActiveListingsByUser } from '@/lib/listings/data';
+import { getListingBySlug, getListingBySlugForAdmin, getSimilarListings, getListingStatusBySlug, countActiveListingsByUser } from '@/lib/listings/data';
 import { imageVariant } from '@/lib/images';
 import { ListingBadge, listingTypeLabel } from './listing-badge';
 import { ListingCard } from './listing-card';
@@ -24,7 +24,13 @@ const HEALTH_LABEL: Record<string, string> = { VACCINE: 'Peyvənd', EXAM: 'Müay
 const card = 'rounded-card bg-white p-5 ring-1 ring-cream-200';
 
 export async function ListingDetailView({ slug }: { slug: string }) {
-  const listing = await getListingBySlug(slug);
+  const session = await auth();
+  const isAdmin = session?.user?.role === 'ADMIN';
+
+  // Admins may preview a not-yet-active listing (PENDING/REJECTED/FINISHED).
+  let listing = await getListingBySlug(slug);
+  const adminPreview = !listing && isAdmin ? await getListingBySlugForAdmin(slug) : null;
+  if (adminPreview) listing = adminPreview;
 
   if (!listing) {
     const existing = await getListingStatusBySlug(slug);
@@ -44,7 +50,7 @@ export async function ListingDetailView({ slug }: { slug: string }) {
   const { pet } = listing;
   const staticFields = (pet.staticFields ?? {}) as Record<string, unknown>;
   const business = listing.user.businessProfile;
-  const [session, similar] = await Promise.all([auth(), getSimilarListings(listing)]);
+  const similar = await getSimilarListings(listing);
   const canMessage = session?.user && session.user.id !== listing.userId;
   const favorited = session?.user ? await isFavorited(session.user.id, listing.id) : false;
   const bizCount = business ? await countActiveListingsByUser(listing.userId) : 0;
@@ -100,9 +106,22 @@ export async function ListingDetailView({ slug }: { slug: string }) {
     },
   ];
 
+  const STATUS_LABEL: Record<string, string> = {
+    PENDING: 'Gözləmədə — admin təsdiqi gözlənilir',
+    REJECTED: 'Rədd edilib',
+    FINISHED: 'Bitib',
+    ACTIVE: 'Aktiv',
+  };
+
   return (
     <main className="mx-auto max-w-[1280px] px-4 py-8">
       <JsonLd data={jsonLd} />
+      {adminPreview && (
+        <div className="mb-4 rounded-card border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+          <b>Admin önizləmə.</b> Bu elan hazırda ictimai deyil — status:{' '}
+          {STATUS_LABEL[listing.status] ?? listing.status}.
+        </div>
+      )}
       <nav className="mb-3 text-sm text-ink/50">
         <Link href="/listings" className="hover:underline">
           Elanlar
@@ -192,17 +211,6 @@ export async function ListingDetailView({ slug }: { slug: string }) {
             <section className={`mt-6 ${card}`}>
               <h2 className="mb-2 font-bold text-ink">Ətraflı</h2>
               <p className="whitespace-pre-line text-sm leading-relaxed text-ink/80">{listing.description}</p>
-            </section>
-          )}
-
-          {listing.lat != null && listing.lng != null && (
-            <section className={`mt-6 ${card}`}>
-              <h2 className="mb-2 font-bold text-ink">Ünvan</h2>
-              <iframe
-                title="Xəritə"
-                className="h-72 w-full rounded-lg border border-cream-200"
-                src={`https://www.openstreetmap.org/export/embed.html?bbox=${listing.lng - 0.01}%2C${listing.lat - 0.01}%2C${listing.lng + 0.01}%2C${listing.lat + 0.01}&marker=${listing.lat}%2C${listing.lng}`}
-              />
             </section>
           )}
 

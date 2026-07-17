@@ -85,7 +85,7 @@ export default async function PetProfilePage({ params }: { params: Promise<{ id:
 
       <div className="mt-2 flex items-center justify-between gap-2">
         <h1 className="text-3xl font-bold text-brand-700">{pet.name}</h1>
-        <Link href={`/pet/${pet.id}/passport`} className="text-sm font-semibold text-brand-600 hover:underline">
+        <Link href={`/pet/${pet.slug ?? pet.id}/passport`} className="text-sm font-semibold text-brand-600 hover:underline">
           Pasportu paylaş
         </Link>
       </div>

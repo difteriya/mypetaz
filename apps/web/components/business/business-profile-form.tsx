@@ -5,6 +5,7 @@ import { Button } from '@mypet/ui';
 import { saveBusinessProfileAction } from '@/lib/business/actions';
 import { DAYS, type BusinessHours } from '@/lib/business/hours';
 import { imageVariant } from '@/lib/images';
+import { LocationPicker } from './location-picker';
 
 const inputClass =
   'w-full rounded-lg border border-cream-200 bg-white px-3 py-2 outline-none focus:border-brand-400';
@@ -80,17 +81,9 @@ export function BusinessProfileForm({
           </label>
           <input id="address" name="address" defaultValue={defaults.address} className={inputClass} />
         </div>
-        <div className="space-y-1">
-          <label htmlFor="lat" className={labelClass}>
-            En dairəsi (lat)
-          </label>
-          <input id="lat" name="lat" type="number" step="any" defaultValue={defaults.lat} className={inputClass} />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="lng" className={labelClass}>
-            Uzunluq (lng)
-          </label>
-          <input id="lng" name="lng" type="number" step="any" defaultValue={defaults.lng} className={inputClass} />
+        <div className="space-y-1 sm:col-span-2">
+          <label className={labelClass}>Xəritədə yer</label>
+          <LocationPicker initialLat={defaults.lat} initialLng={defaults.lng} />
         </div>
       </div>
 
