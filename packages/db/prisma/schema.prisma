@@ -99,6 +99,12 @@ enum NotificationType {
   BUSINESS_APPROVED
   BUSINESS_REJECTED
   OWNERSHIP_TRANSFER
+  VET_APPROVED
+  VET_REJECTED
+  APPOINTMENT_REQUESTED
+  APPOINTMENT_PROPOSED
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_REJECTED
 }
 
 enum ReportTargetType {
@@ -384,6 +390,7 @@ model Pet {
   breedFreeText String? // for "Digər" category (PLAN.md §2.2.1)
   name          String
   slug          String? @unique // readable URL handle, e.g. "toby-golden-retriever"
+  asBusiness    Boolean @default(false) // created from the business dashboard context
   birthDate     DateTime?
   birthApprox   Boolean   @default(false) // true = birthDate is an approximation
   sex           PetSex    @default(UNKNOWN)
@@ -498,6 +505,7 @@ model Listing {
   lng             Float?
   phone           String?
   featured        Boolean       @default(false) // admin-managed in Phase 1 (§2.4)
+  asBusiness      Boolean       @default(false) // posted from the business dashboard context
   status          ListingStatus @default(PENDING) // never created ACTIVE automatically
   rejectionReason String?
   createdAt       DateTime      @default(now())
@@ -679,6 +687,7 @@ model Notification {
   type      NotificationType
   message   String
   link      String?
+  source    String? // who it came from, e.g. "ZooMart Vet Klinikası", "Admin"
   read      Boolean          @default(false)
   createdAt DateTime         @default(now())
 
@@ -743,6 +752,8 @@ model VetProfile {
   userId        String   @unique
   clinicName    String
   specialty     String?
+  about         String? @db.Text // clinic/doctor introduction shown on the public profile
+  phone         String?
   businessHours Json?
   address       String?
   licenseNo     String?
@@ -781,10 +792,11 @@ model VetAppointment {
 }
 
 model VetVisitRecord {
-  id             String    @id @default(cuid())
-  appointmentId  String    @unique
+  id             String           @id @default(cuid())
+  appointmentId  String           @unique
   petId          String
   vetId          String
+  recordType     HealthRecordType @default(EXAM) // maps to PetHealthRecord.type on approve (§7.3)
   examType       String
   description    String?   @db.Text
   date           DateTime

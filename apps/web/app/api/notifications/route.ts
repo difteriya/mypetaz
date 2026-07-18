@@ -19,18 +19,28 @@ export async function GET() {
       type: n.type,
       message: n.message,
       link: n.link,
+      source: n.source,
       read: n.read,
       createdAt: n.createdAt.toISOString(),
     })),
   });
 }
 
-/** Mark all of the user's notifications read (from the dropdown). */
-export async function POST() {
+/** Mark read: `{ id }` for a single notification, empty body for all. */
+export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) return new Response('Unauthorized', { status: 401 });
+
+  let id: string | undefined;
+  try {
+    const body = await req.json();
+    if (body && typeof body.id === 'string') id = body.id;
+  } catch {
+    /* no body → mark all */
+  }
+
   await prisma.notification.updateMany({
-    where: { userId: session.user.id, read: false },
+    where: { userId: session.user.id, read: false, ...(id ? { id } : {}) },
     data: { read: true },
   });
   return Response.json({ ok: true });

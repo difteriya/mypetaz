@@ -8,7 +8,7 @@ const LINKS = [
   { href: '/dashboard', label: 'İcmal', exact: true },
   { href: '/pets', label: 'Petlərim' },
   { href: '/dashboard/listings', label: 'Elanlarım' },
-  { href: '/dashboard/business', label: 'Biznesim' },
+  { href: '/biz', label: 'Biznes' },
   { href: '/messages', label: 'Mesajlar' },
   { href: '/dashboard/notifications', label: 'Bildirişlər' },
   { href: '/dashboard/blog', label: 'Bloqum' },

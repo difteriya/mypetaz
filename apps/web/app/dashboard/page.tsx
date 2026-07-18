@@ -8,6 +8,9 @@ import { logoutAction } from '@/lib/actions/auth';
 import { getUnreadTotal } from '@/lib/messages/data';
 import { unreadNotificationCount, listNotifications } from '@/lib/notifications/data';
 import { getMyBusiness } from '@/lib/business/data';
+import { getMyVetProfile } from '@/lib/vet/data';
+import { VET_APP_URL } from '@/lib/vet/urls';
+import { acceptProposalAction, declineProposalAction } from '@/lib/vet/appointment-actions';
 import { imageVariant } from '@/lib/images';
 import {
   StatCard,
@@ -64,6 +67,7 @@ export default async function DashboardPage() {
     myPets,
     pendingItems,
     vetAppts,
+    vetProfile,
   ] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: uid },
@@ -99,8 +103,16 @@ export default async function DashboardPage() {
       where: { requesterUserId: uid, date: { gte: now }, status: { in: ['REQUEST', 'CONFIRMED'] } },
       orderBy: { date: 'asc' },
       take: 5,
-      select: { id: true, date: true, status: true, pet: { select: { name: true } }, vet: { select: { clinicName: true } } },
+      select: {
+        id: true,
+        date: true,
+        status: true,
+        createdBy: true,
+        pet: { select: { id: true, name: true } },
+        vet: { select: { clinicName: true } },
+      },
     }),
+    getMyVetProfile(uid),
   ]);
 
   const listingCount = listingGroups.reduce((s, g) => s + g._count._all, 0);
@@ -207,8 +219,15 @@ export default async function DashboardPage() {
         <QuickAction icon={<PlusIcon />} label="Bloq yaz" href="/write-post" />
         <QuickAction
           icon={<StoreIcon />}
-          label={isBusiness ? 'Biznesi idarə et' : 'Biznes hesabı aç'}
-          href={isBusiness ? '/dashboard/business' : '/become-business'}
+          label={isBusiness ? 'Biznesə keç' : 'Mağaza yarat'}
+          href={isBusiness ? '/biz' : '/become-business'}
+        />
+        <QuickAction
+          icon={<StethoscopeIcon />}
+          label={
+            !vetProfile ? 'Baytar profili yarat' : vetProfile.verified ? 'Vet panelə keç' : 'Baytar: təsdiq gözlənilir'
+          }
+          href={!vetProfile ? '/become-vet' : vetProfile.verified ? VET_APP_URL : '/become-vet'}
         />
       </div>
 
@@ -322,32 +341,71 @@ export default async function DashboardPage() {
           )}
         </SectionCard>
 
-        <SectionCard title="Vet təyinatları">
+        <SectionCard
+          title="Vet təyinatları"
+          action={
+            <Link href="/vets" className="text-sm font-medium text-brand-600 hover:underline">
+              Baytar tap
+            </Link>
+          }
+        >
           {vetAppts.length === 0 ? (
             <div className="py-6 text-center text-sm text-ink/50">
               <span className="mx-auto mb-2 grid size-11 place-items-center rounded-xl bg-teal-50 text-teal-600">
                 <StethoscopeIcon />
               </span>
               <p>Yaxın vet təyinatı yoxdur.</p>
+              <Link href="/vets" className="mt-2 inline-block font-semibold text-brand-600 hover:underline">
+                Baytar seçib sorğu göndər →
+              </Link>
             </div>
           ) : (
             <ul className="divide-y divide-cream-200">
-              {vetAppts.map((a) => (
-                <li key={a.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium text-ink">{a.pet.name}</span>
-                    <span className="text-xs text-ink/50">{a.vet.clinicName}</span>
-                  </span>
-                  <span className="shrink-0 text-right">
-                    <span className="block text-sm text-ink/80">
-                      {a.date.toLocaleDateString('az-AZ', { day: '2-digit', month: '2-digit' })}
+              {vetAppts.map((a) => {
+                const isProposal = a.status === 'REQUEST' && a.createdBy === 'DOCTOR';
+                return (
+                  <li key={a.id} className="flex items-center justify-between gap-3 py-2.5">
+                    <span className="min-w-0">
+                      <Link
+                        href={`/pet/${a.pet.id}`}
+                        className="block text-sm font-medium text-ink hover:text-brand-600 hover:underline"
+                      >
+                        {a.pet.name}
+                      </Link>
+                      <span className="text-xs text-ink/50">{a.vet.clinicName}</span>
                     </span>
-                    <span className={`text-xs ${a.status === 'CONFIRMED' ? 'text-badge-sale' : 'text-amber-600'}`}>
-                      {a.status === 'CONFIRMED' ? 'Təsdiqləndi' : 'Gözləmədə'}
-                    </span>
-                  </span>
-                </li>
-              ))}
+                    {isProposal ? (
+                      <span className="flex shrink-0 items-center gap-2">
+                        <span className="text-xs text-ink/60">
+                          {a.date.toLocaleDateString('az-AZ', { day: '2-digit', month: '2-digit' })}{' '}
+                          {a.date.toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <form action={acceptProposalAction}>
+                          <input type="hidden" name="id" value={a.id} />
+                          <button className="rounded-full bg-teal-500 px-3 py-1 text-xs font-bold text-white hover:bg-teal-600">
+                            Qəbul et
+                          </button>
+                        </form>
+                        <form action={declineProposalAction}>
+                          <input type="hidden" name="id" value={a.id} />
+                          <button className="rounded-full border border-cream-200 px-3 py-1 text-xs font-semibold text-ink/60 hover:text-badge-lostfound">
+                            Rədd et
+                          </button>
+                        </form>
+                      </span>
+                    ) : (
+                      <span className="shrink-0 text-right">
+                        <span className="block text-sm text-ink/80">
+                          {a.date.toLocaleDateString('az-AZ', { day: '2-digit', month: '2-digit' })}
+                        </span>
+                        <span className={`text-xs ${a.status === 'CONFIRMED' ? 'text-badge-sale' : 'text-amber-600'}`}>
+                          {a.status === 'CONFIRMED' ? 'Təsdiqləndi' : 'Həkim təsdiqi gözlənilir'}
+                        </span>
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </SectionCard>

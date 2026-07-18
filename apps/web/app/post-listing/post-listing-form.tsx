@@ -23,10 +23,12 @@ export function PostListingForm({
   pets,
   cities,
   categories,
+  asBusiness = false,
 }: {
   pets: PetOpt[];
   cities: { id: string; name: string }[];
   categories: CategoryForForm[];
+  asBusiness?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(createListingAction, undefined);
   const [type, setType] = useState<string>('SALE');
@@ -36,6 +38,7 @@ export function PostListingForm({
 
   return (
     <form action={formAction} className="space-y-4">
+      {asBusiness && <input type="hidden" name="asBusiness" value="1" />}
       <div className="space-y-1">
         <label htmlFor="petId" className={labelClass}>
           Pet <span className="text-badge-lostfound">*</span>

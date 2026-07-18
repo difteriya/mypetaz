@@ -74,9 +74,16 @@ export async function createPetFromForm(
     return { error: staticParsed.error.issues[0]?.message ?? 'Əlavə sahələr yanlışdır' };
   }
 
+  // Business context: honored only when the owner actually has a BusinessProfile.
+  const wantsBusiness = formData.get('asBusiness') === '1';
+  const asBusiness = wantsBusiness
+    ? Boolean(await prisma.businessProfile.findUnique({ where: { userId: ownerId }, select: { id: true } }))
+    : false;
+
   // 5) Create the pet. The slug carries a random suffix so it's always unique;
   // on the astronomically rare hex collision P2002 fires — regenerate & retry.
   const petData = {
+    asBusiness,
     ownerId,
     categoryId: category.id,
     breedId: data.breedId ?? null,

@@ -38,6 +38,9 @@ export function SiteHeader() {
           <Link href="/businesses" className="text-ink/70 transition-colors hover:text-brand-600">
             Bizneslər
           </Link>
+          <Link href="/vets" className="text-ink/70 transition-colors hover:text-brand-600">
+            Baytarlar
+          </Link>
           <Link href="/blog" className="text-ink/70 transition-colors hover:text-brand-600">
             Bloq
           </Link>

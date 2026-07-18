@@ -56,12 +56,18 @@ export async function sendMessageAction(_prev: SendState, formData: FormData): P
   ]);
 
   // Notify the recipient in-app (email is throttled/opt-in, PLAN.md §2.6).
+  // Source: the sender's business name when they have one, else their own name.
   const recipientId = convo.buyerId === session.user.id ? convo.sellerId : convo.buyerId;
+  const senderBiz = await prisma.businessProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { name: true },
+  });
   await notify({
     userId: recipientId,
     type: 'NEW_MESSAGE',
     message: 'Yeni mesajınız var',
     link: `/messages/${convo.id}`,
+    source: senderBiz?.name ?? session.user.name ?? undefined,
   });
 
   revalidatePath(`/messages/${convo.id}`);

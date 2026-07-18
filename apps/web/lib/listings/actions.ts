@@ -57,6 +57,12 @@ export async function createListingAction(
     petId = pet.id;
   }
 
+  // Business context: honored only when the user actually has a BusinessProfile.
+  const wantsBusiness = formData.get('asBusiness') === '1';
+  const asBusiness = wantsBusiness
+    ? Boolean(await prisma.businessProfile.findUnique({ where: { userId: session.user.id }, select: { id: true } }))
+    : false;
+
   const slug = `${slugify(data.title) || 'elan'}-${randomBytes(4).toString('hex')}`;
 
   // Created PENDING — not publicly visible until admin approval (PLAN.md §2.4).
@@ -65,6 +71,7 @@ export async function createListingAction(
       type: data.type,
       petId,
       userId: session.user.id,
+      asBusiness,
       cityId: data.cityId ?? null,
       title: data.title,
       slug,

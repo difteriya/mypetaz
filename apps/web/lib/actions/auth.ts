@@ -40,6 +40,8 @@ export async function registerAction(
     name: formData.get('name'),
     email: formData.get('email'),
     password: formData.get('password'),
+    accountType: formData.get('accountType') ?? 'INDIVIDUAL',
+    businessName: formData.get('businessName'),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Məlumatlar yanlışdır' };
@@ -55,7 +57,8 @@ export async function registerAction(
     await signIn('credentials', {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: '/dashboard',
+      // Business accounts land on their business dashboard.
+      redirectTo: parsed.data.accountType === 'BUSINESS' ? '/biz' : '/dashboard',
     });
   } catch (err) {
     if (err instanceof AuthError) return { error: GENERIC_LOGIN_ERROR };

@@ -7,7 +7,7 @@ import { PawIcon } from '@/components/icons';
 
 export function ListingCard({ listing }: { listing: ListingCardData }) {
   const cover = listing.pet.images[0];
-  const isBusiness = listing.user.accountType === 'BUSINESS';
+  const isBusiness = listing.asBusiness;
 
   return (
     <Link

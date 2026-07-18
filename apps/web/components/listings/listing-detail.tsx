@@ -49,7 +49,9 @@ export async function ListingDetailView({ slug }: { slug: string }) {
 
   const { pet } = listing;
   const staticFields = (pet.staticFields ?? {}) as Record<string, unknown>;
-  const business = listing.user.businessProfile;
+  // Seller shows as a business only when the listing was posted from the
+  // business context (asBusiness) — personal listings by business owners stay personal.
+  const business = listing.asBusiness ? listing.user.businessProfile : null;
   const similar = await getSimilarListings(listing);
   const canMessage = session?.user && session.user.id !== listing.userId;
   const favorited = session?.user ? await isFavorited(session.user.id, listing.id) : false;

@@ -1,26 +1,34 @@
 import Link from 'next/link';
 import { Button } from '@mypet/ui';
 import {
-  getFeaturedListings,
-  getLatestListings,
+  getFeaturedFeedPage,
+  getLatestFeedPage,
   getCategoriesWithBreeds,
   getCategoryListingCounts,
 } from '@/lib/listings/data';
+import { ListingFeed } from '@/components/listings/listing-feed';
+import { PAGE_SIZE } from '@/app/api/listings/feed/route';
 import { getBlockMap } from '@/lib/cms/data';
 import { imageVariant } from '@/lib/images';
-import { ListingCard } from '@/components/listings/listing-card';
 import { JsonLd, APP_URL } from '@/components/json-ld';
 import { HeroSearch } from '@/components/home/hero-search';
 
 export default async function HomePage() {
-  const [featured, latest, categories, catCounts, home] = await Promise.all([
-    getFeaturedListings(),
-    getLatestListings(8),
+  const [featuredPage, feedPage, categories, catCounts, home] = await Promise.all([
+    getFeaturedFeedPage(0, PAGE_SIZE + 1),
+    getLatestFeedPage(0, PAGE_SIZE + 1),
     getCategoriesWithBreeds(),
     getCategoryListingCounts(),
     getBlockMap('HOME'),
   ]);
   const heroImg = home.get('hero_image');
+  const bannerImg = home.get('home_banner_image');
+  const bannerLink = home.get('home_banner_link', '/listings');
+  const bannerExternal = bannerLink.startsWith('http');
+  const initialFeatured = featuredPage.slice(0, PAGE_SIZE);
+  const featuredHasMore = featuredPage.length > PAGE_SIZE;
+  const initialLatest = feedPage.slice(0, PAGE_SIZE);
+  const feedHasMore = feedPage.length > PAGE_SIZE;
 
   return (
     <main className="px-4 py-8">
@@ -83,32 +91,31 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured */}
-      {featured.length > 0 && (
+      {/* Seçilmiş elanlar — infinite scroll */}
+      {initialFeatured.length > 0 && (
         <section className="mt-14">
-          <h2 className="mb-5 text-2xl font-extrabold text-ink">Seçilmiş Elanlar</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {featured.map((l) => (
-              <ListingCard key={l.id} listing={l} />
-            ))}
-          </div>
+          <h2 className="mb-5 text-2xl font-extrabold text-ink">Seçilmiş elanlar</h2>
+          <ListingFeed initialItems={initialFeatured} initialHasMore={featuredHasMore} featured />
         </section>
       )}
 
-      {/* Latest */}
-      {latest.length > 0 && (
-        <section className="mt-14">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-2xl font-extrabold text-ink">Son Elanlar</h2>
-            <Link href="/listings" className="text-sm font-semibold text-brand-600 hover:underline">
-              Hamısına bax →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {latest.map((l) => (
-              <ListingCard key={l.id} listing={l} />
-            ))}
-          </div>
+      {/* Reklam banneri (CMS: home_banner_image + home_banner_link) */}
+      {bannerImg && (
+        <a
+          href={bannerLink || '/'}
+          {...(bannerExternal ? { target: '_blank', rel: 'noreferrer' } : {})}
+          className="mt-12 block overflow-hidden rounded-2xl ring-1 ring-cream-200 transition-shadow hover:shadow-soft"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imageVariant(bannerImg, 'full')} alt="Reklam banneri" className="w-full object-cover" />
+        </a>
+      )}
+
+      {/* Bütün elanlar — infinite scroll */}
+      {initialLatest.length > 0 && (
+        <section className="mt-12">
+          <h2 className="mb-5 text-2xl font-extrabold text-ink">Bütün elanlar</h2>
+          <ListingFeed initialItems={initialLatest} initialHasMore={feedHasMore} />
         </section>
       )}
     </main>

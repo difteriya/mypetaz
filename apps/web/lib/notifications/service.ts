@@ -13,11 +13,15 @@ export async function notify(params: {
   type: NotificationType;
   message: string;
   link?: string;
+  /** Who it came from (clinic/business/user name); UI falls back to a type category. */
+  source?: string;
   email?: boolean;
 }): Promise<void> {
-  const { userId, type, message, link, email } = params;
+  const { userId, type, message, link, source, email } = params;
 
-  await prisma.notification.create({ data: { userId, type, message, link: link ?? null } });
+  await prisma.notification.create({
+    data: { userId, type, message, link: link ?? null, source: source ?? null },
+  });
 
   if (email) {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });

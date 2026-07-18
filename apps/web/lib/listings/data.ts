@@ -77,6 +77,31 @@ export function getLatestListings(take = 8) {
   });
 }
 
+/**
+ * A page of the homepage "Bütün elanlar" feed — all active listings by date.
+ * Drives the infinite-scroll feed (featured also get a highlight section above).
+ */
+export function getLatestFeedPage(skip: number, take: number) {
+  return prisma.listing.findMany({
+    where: { status: 'ACTIVE' },
+    include: cardInclude,
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take,
+  });
+}
+
+/** A page of the "Seçilmiş elanlar" feed — active featured listings by date. */
+export function getFeaturedFeedPage(skip: number, take: number) {
+  return prisma.listing.findMany({
+    where: { status: 'ACTIVE', featured: true },
+    include: cardInclude,
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take,
+  });
+}
+
 export function getFeaturedListings(take = 8) {
   return prisma.listing.findMany({
     where: { status: 'ACTIVE', featured: true },
@@ -156,10 +181,11 @@ export function getSimilarListings(listing: {
   });
 }
 
-/** A business's public listings (for the storefront, PLAN.md §2.7). */
+/** A business's public listings (for the storefront, PLAN.md §2.7) — only
+ * listings posted from the business context. */
 export function getActiveListingsByUser(userId: string) {
   return prisma.listing.findMany({
-    where: { userId, status: 'ACTIVE' },
+    where: { userId, status: 'ACTIVE', asBusiness: true },
     include: cardInclude,
     orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
   });

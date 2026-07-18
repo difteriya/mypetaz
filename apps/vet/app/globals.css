@@ -1,11 +1,28 @@
 @import 'tailwindcss';
 
-/* Shared palette; the vet platform uses a calmer, more clinical tone (PLAN.md §5). */
+/* Shared palette base; the vet panel overrides toward a calmer, clinical
+   "day sheet" tone (PLAN.md §5/§7): cool paper (not the consumer cream),
+   teal as the working color, coral reserved for new-request signals only. */
 @import '../../../packages/config/tailwind/tokens.css';
 
 @source '../../../packages/ui/src';
 
+@theme {
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, 'Cascadia Mono', monospace;
+
+  /* Clinical sheet palette */
+  --color-vpaper: #f6faf9;
+  --color-vink: #1f2b28;
+  --color-vteal-700: #0f6e61;
+  --color-vteal-500: #199e8a;
+  --color-vteal-100: #d5efe8;
+  --color-vteal-50: #e9f6f2;
+  --color-vline: #d9e7e3;
+  --color-vsignal: #f4622f; /* new-request signal only */
+}
+
 body {
-  background-color: #f7fafb;
-  color: #1f2b30;
+  background-color: var(--color-vpaper);
+  color: var(--color-vink);
 }

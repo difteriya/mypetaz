@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { notificationCategory, CATEGORY_TONE } from '@/lib/notifications/source-label';
 
 interface Notif {
   id: string;
   type: string;
   message: string;
   link: string | null;
+  source: string | null;
   read: boolean;
   createdAt: string;
 }
@@ -74,6 +76,23 @@ export function NotificationBell() {
     setItems((prev) => prev.map((i) => ({ ...i, read: true })));
   };
 
+  /** Clicking a notification marks it read (fire-and-forget; survives navigation). */
+  const markOne = (n: Notif) => {
+    if (n.read) return;
+    try {
+      void fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: n.id }),
+        keepalive: true,
+      });
+    } catch {
+      /* ignore */
+    }
+    setItems((prev) => prev.map((i) => (i.id === n.id ? { ...i, read: true } : i)));
+    setUnread((u) => Math.max(0, u - 1));
+  };
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -110,20 +129,39 @@ export function NotificationBell() {
               <p className="p-6 text-center text-sm text-ink/50">Hələ bildiriş yoxdur</p>
             ) : (
               items.map((n) => {
+                const cat = notificationCategory(n.type);
                 const inner = (
                   <div className={`px-4 py-3 ${n.read ? '' : 'bg-brand-50'}`}>
+                    <span
+                      className={`mb-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${CATEGORY_TONE[cat.tone]}`}
+                    >
+                      {n.source ?? cat.label}
+                    </span>
                     <p className="text-sm text-ink/80">{n.message}</p>
                     <p className="mt-0.5 text-xs text-ink/40">{timeAgo(n.createdAt)}</p>
                   </div>
                 );
                 return n.link ? (
-                  <Link key={n.id} href={n.link} onClick={() => setOpen(false)} className="block transition-colors hover:bg-cream-50">
+                  <Link
+                    key={n.id}
+                    href={n.link}
+                    onClick={() => {
+                      markOne(n);
+                      setOpen(false);
+                    }}
+                    className="block transition-colors hover:bg-cream-50"
+                  >
                     {inner}
                   </Link>
                 ) : (
-                  <div key={n.id} className="border-b border-cream-100 last:border-0">
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => markOne(n)}
+                    className="block w-full border-b border-cream-100 text-left transition-colors last:border-0 hover:bg-cream-50"
+                  >
                     {inner}
-                  </div>
+                  </button>
                 );
               })
             )}
