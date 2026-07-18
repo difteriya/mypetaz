@@ -11,6 +11,7 @@ import {
 } from '@/lib/actions';
 import { StatusPill, fmtTime, fmtDate } from '../../ui';
 import { PetChart } from '../../pet-chart';
+import { petProfileUrl } from '@/lib/urls';
 import { VisitRecordForm } from './visit-record-form';
 
 export const metadata: Metadata = { title: 'Təyinat' };
@@ -54,17 +55,27 @@ export default async function AppointmentDetailPage({ params }: { params: Promis
             {fmtDate(appt.date)} {fmtTime(appt.date)}
             {appt.createdBy === 'DOCTOR' ? ' · walk-in' : ''}
           </p>
-          <Link href={`/pets/${pet.id}`} className="group inline-flex items-center gap-1.5">
+          <a
+            href={petProfileUrl(pet.id)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-1.5"
+          >
             <h1 className="text-2xl font-extrabold group-hover:text-vteal-700">{pet.name}</h1>
-            <span className="text-vteal-500 transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
-          </Link>
+            <span className="text-vteal-500 transition-transform group-hover:translate-x-0.5" aria-hidden>↗</span>
+          </a>
           <p className="text-sm text-vink/55">
             {pet.breed?.name ?? pet.category.name} · Sahib: {appt.requester.name ?? appt.requester.email}
             {appt.requester.phone ? ` · ${appt.requester.phone}` : ''}
           </p>
-          <Link href={`/pets/${pet.id}`} className="mt-0.5 inline-block text-xs font-semibold text-vteal-700 hover:underline">
-            Tam pet profilinə bax
-          </Link>
+          <a
+            href={petProfileUrl(pet.id)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-0.5 inline-block text-xs font-semibold text-vteal-700 hover:underline"
+          >
+            Pet profilinə bax (mypet.az) ↗
+          </a>
           {appt.note && <p className="mt-1 text-sm text-vink/70">Qeyd: {appt.note}</p>}
         </div>
         <div className="flex items-center gap-2">

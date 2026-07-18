@@ -48,24 +48,48 @@ export function getMyTransfersArchive(oldOwnerId: string) {
   });
 }
 
+const petFullInclude = {
+  category: {
+    include: { fields: { where: { active: true }, orderBy: { order: 'asc' } } },
+  },
+  breed: true,
+  images: { orderBy: { order: 'asc' } },
+  passport: true,
+  healthRecords: {
+    orderBy: { date: 'desc' },
+    include: {
+      addedBy: { select: { id: true, name: true } },
+      vetAppointment: { select: { vet: { select: { clinicName: true } } } },
+    },
+  },
+} as const;
+
 /** A single pet, scoped to its owner (full view). Accepts a slug or an id. */
 export function getPetForOwner(handle: string, ownerId: string) {
   return prisma.pet.findFirst({
     where: { ownerId, OR: [{ id: handle }, { slug: handle }] },
-    include: {
-      category: {
-        include: { fields: { where: { active: true }, orderBy: { order: 'asc' } } },
-      },
-      breed: true,
-      images: { orderBy: { order: 'asc' } },
-      passport: true,
-      healthRecords: {
-        orderBy: { date: 'desc' },
-        include: {
-          addedBy: { select: { id: true, name: true } },
-          vetAppointment: { select: { vet: { select: { clinicName: true } } } },
-        },
-      },
-    },
+    include: petFullInclude,
   });
+}
+
+/**
+ * A single pet visible to a treating vet — read-only (§7.4). The viewer must
+ * have a verified VetProfile AND at least one appointment for this pet; the
+ * appointment is the authorization. Same shape as getPetForOwner.
+ */
+export async function getPetForTreatingVet(handle: string, viewerUserId: string) {
+  const vet = await prisma.vetProfile.findFirst({
+    where: { userId: viewerUserId, verified: true },
+    select: { id: true },
+  });
+  if (!vet) return null;
+
+  const pet = await prisma.pet.findFirst({
+    where: {
+      OR: [{ id: handle }, { slug: handle }],
+      vetAppointments: { some: { vetId: vet.id } },
+    },
+    include: petFullInclude,
+  });
+  return pet;
 }

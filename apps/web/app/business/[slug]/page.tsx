@@ -116,6 +116,24 @@ export default async function BusinessStorefront({ params }: { params: Promise<{
         <p className="mt-4 whitespace-pre-line rounded-card bg-white p-5 text-sm">{business.description}</p>
       )}
 
+      {/* Services — shown right after the about text */}
+      {business.serviceOfferings.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mb-4 text-xl font-bold text-brand-700">Göstərdiyi xidmətlər</h2>
+          <ul className="space-y-2">
+            {business.serviceOfferings.map((o) => (
+              <li key={o.id} className="flex items-center justify-between rounded-card bg-white p-4 text-sm">
+                <div>
+                  <span className="font-medium">{o.name}</span>
+                  {o.description && <p className="text-brand-900/60">{o.description}</p>}
+                </div>
+                {o.price != null && <span className="font-bold text-brand-700">{Number(o.price)} ₼</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {(business.address || (business.lat != null && business.lng != null)) && (
         <div className="mt-4 space-y-3 rounded-card bg-white p-5 text-sm">
           {business.address && (
@@ -164,24 +182,6 @@ export default async function BusinessStorefront({ params }: { params: Promise<{
               <ListingCard key={l.id} listing={l} />
             ))}
           </div>
-        </section>
-      )}
-
-      {/* Services */}
-      {business.serviceOfferings.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-4 text-xl font-bold text-brand-700">Göstərdiyi xidmətlər</h2>
-          <ul className="space-y-2">
-            {business.serviceOfferings.map((o) => (
-              <li key={o.id} className="flex items-center justify-between rounded-card bg-white p-4 text-sm">
-                <div>
-                  <span className="font-medium">{o.name}</span>
-                  {o.description && <p className="text-brand-900/60">{o.description}</p>}
-                </div>
-                {o.price != null && <span className="font-bold text-brand-700">{Number(o.price)} ₼</span>}
-              </li>
-            ))}
-          </ul>
         </section>
       )}
 
