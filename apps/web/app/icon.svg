@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="mypet.az">
+  <!-- Brand mark: the header's paw on a coral tile. Solid background so the
+       mark stays legible on both light and dark browser tabs. -->
+  <rect width="64" height="64" rx="14" fill="#f4622f" />
+  <g fill="#ffffff" transform="translate(32 33) scale(2.45) translate(-12 -12.5)">
+    <ellipse cx="5.5" cy="12" rx="2" ry="2.6" />
+    <ellipse cx="9.5" cy="7.5" rx="2" ry="2.6" />
+    <ellipse cx="14.5" cy="7.5" rx="2" ry="2.6" />
+    <ellipse cx="18.5" cy="12" rx="2" ry="2.6" />
+    <path d="M12 12.5c-2.6 0-4.8 1.9-5.4 4.3-.4 1.7.9 3.2 2.6 3.2 1 0 1.9-.4 2.8-.4s1.8.4 2.8.4c1.7 0 3-1.5 2.6-3.2-.6-2.4-2.8-4.3-5.4-4.3Z" />
+  </g>
+</svg>
