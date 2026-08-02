@@ -5,8 +5,8 @@ session:
 
 | Domain          | App        | Passenger app root      | Startup file |
 | --------------- | ---------- | ----------------------- | ------------ |
-| `mypet.az`      | `apps/web` | `<repo>/apps/web`       | `server.js`  |
-| `vet.mypet.az`  | `apps/vet` | `<repo>/apps/vet`       | `server.js`  |
+| `mypet.az`      | `apps/web` | `<repo>/apps/web`       | `server.cjs`  |
+| `vet.mypet.az`  | `apps/vet` | `<repo>/apps/vet`       | `server.cjs`  |
 
 Both are Next.js 15 (SSR + Server Actions) — they need a **Node runtime**, not a
 static export. The repo is cloned **once**; each domain's Passenger app points at
@@ -70,7 +70,7 @@ For **each** domain: Plesk → domain → **Node.js**:
 | Node version             | 20.x                     | 20.x                     |
 | Application mode         | production               | production               |
 | Application root         | `<repo>/apps/web`        | `<repo>/apps/vet`        |
-| Application startup file | `server.js`              | `server.js`              |
+| Application startup file | `server.cjs`              | `server.cjs`              |
 | Document root            | `<repo>/apps/web/public` | `<repo>/apps/vet/public` |
 
 Do **not** click Plesk's "NPM install" button — it runs `npm` at the app root and
@@ -136,7 +136,14 @@ mkdir -p /var/www/vhosts/mypet.az/uploads
 
 - **Passenger 502 / app won't boot** — check the domain's Passenger log
   (`<repo>/apps/web/tmp` or Plesk → Logs). Usually a missing env var or a build
-  that didn't finish.
+  that didn't finish. To see the real error, boot the app by hand:
+  `cd <repo>/apps/web && PORT=3900 node server.cjs`.
+- **"Web application could not be started"** — the startup file must stay
+  **`.cjs`**. Passenger `require()`s it, and these packages are `"type":
+  "module"`, so a `.js` file is treated as ESM and fails to load.
+- **`AH00124: exceeded the limit of 10 internal redirects`** — Apache looping
+  because the app never booted (see above), or a leftover `.htaccess` in the old
+  document root (e.g. from a previous WordPress install) — move it aside.
 - **Build OOM-killed** — the deploy script sets `--max-old-space-size=2048`; raise
   it, or build one app at a time (`pnpm --filter @mypet/web build`).
 - **Prisma "engine not found"** — always run `pnpm db:generate` **on the server**
