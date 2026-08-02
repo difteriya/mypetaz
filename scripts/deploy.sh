@@ -6,6 +6,28 @@
 # Set it in Plesk → Domain → Git → Deploy actions as:  bash scripts/deploy.sh
 set -euo pipefail
 
+# Plesk runs deployment actions with a bare environment: neither node nor pnpm
+# is on PATH, so tools that shell out to `node` (the prisma bin, next) die with
+# "exec: node: not found". Put Plesk's Node on PATH first.
+# Pin a specific one by exporting PLESK_NODE_BIN=/opt/plesk/node/20/bin.
+if ! command -v node >/dev/null 2>&1; then
+  if [ -n "${PLESK_NODE_BIN:-}" ] && [ -x "$PLESK_NODE_BIN/node" ]; then
+    export PATH="$PLESK_NODE_BIN:$PATH"
+  else
+    # Highest available version wins (the glob sorts ascending).
+    for d in /opt/plesk/node/*/bin; do
+      [ -x "$d/node" ] && export PATH="$d:$PATH"
+    done
+  fi
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "node not found — set PLESK_NODE_BIN to the directory holding the node binary"
+  echo "  (Plesk usually installs it under /opt/plesk/node/<version>/bin)"
+  exit 1
+fi
+echo "→ node $(node -v) ($(command -v node))"
+
 # Make pnpm available. On shared Plesk hosting `corepack enable` fails with
 # EACCES (it symlinks into the root-owned Node dir), so prefer the per-user
 # install at ~/.local/share/pnpm (see DEPLOY-PLESK.md step 6).

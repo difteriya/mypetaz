@@ -148,5 +148,10 @@ mkdir -p /var/www/vhosts/mypet.az/uploads
   it, or build one app at a time (`pnpm --filter @mypet/web build`).
 - **Prisma "engine not found"** — always run `pnpm db:generate` **on the server**
   (never ship a Windows-generated client); the deploy script does this.
+- **`exec: node: not found` during an automatic deploy** — Plesk runs deployment
+  actions with a bare PATH. `scripts/deploy.sh` prepends Plesk's Node
+  (`/opt/plesk/node/<version>/bin`) itself; pin a specific one by adding
+  `export PLESK_NODE_BIN=/opt/plesk/node/20/bin` above the `bash scripts/deploy.sh`
+  line in the Plesk deploy-actions box.
 - **Login loops / not shared** — both apps must use the same `AUTH_SECRET`,
   `AUTH_COOKIE_DOMAIN=.mypet.az`, and valid HTTPS certs.
