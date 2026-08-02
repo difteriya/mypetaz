@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { Button } from '@mypet/ui';
 import { createBlogPostAction, updateBlogPostAction } from '@/lib/blog/actions';
-import { imageVariant } from '@/lib/images';
+import { ImageDropZone } from '@/components/uploads/image-drop-zone';
 
 const inputClass =
   'w-full rounded-lg border border-cream-200 bg-white px-3 py-2 outline-none focus:border-brand-400';
@@ -76,10 +76,7 @@ export function WritePostForm({
         <label htmlFor="coverImage" className={labelClass}>
           Örtük şəkli
         </label>
-        {post?.coverImage && (
-          <img src={imageVariant(post.coverImage, 'card')} alt="Örtük" className="mb-1 h-24 rounded object-cover" />
-        )}
-        <input id="coverImage" name="coverImage" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="block w-full text-sm" />
+        <ImageDropZone name="coverImage" currentUrl={post?.coverImage ?? null} currentAlt="Örtük şəkli" />
       </div>
 
       {state?.error && <p className="text-sm text-badge-lostfound">{state.error}</p>}

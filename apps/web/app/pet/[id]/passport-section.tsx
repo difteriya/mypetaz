@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { Button } from '@mypet/ui';
 import { savePassportAction } from '@/lib/pets/health-actions';
-import { imageVariant } from '@/lib/images';
+import { ImageDropZone } from '@/components/uploads/image-drop-zone';
 
 const inputClass =
   'w-full rounded-lg border border-cream-200 bg-white px-3 py-2 outline-none focus:border-brand-400';
@@ -59,19 +59,10 @@ export function PassportSection({ petId, passport }: { petId: string; passport: 
           <label htmlFor="documentImage" className={labelClass}>
             Sənəd şəkli
           </label>
-          {passport.documentImage && (
-            <img
-              src={imageVariant(passport.documentImage, 'card')}
-              alt={passport.documentImageAlt ?? 'Pasport sənədi'}
-              className="mb-2 max-h-40 rounded-lg border border-cream-200"
-            />
-          )}
-          <input
-            id="documentImage"
+          <ImageDropZone
             name="documentImage"
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            className="block w-full text-sm"
+            currentUrl={passport.documentImage}
+            currentAlt={passport.documentImageAlt ?? 'Pasport sənədi'}
           />
         </div>
 

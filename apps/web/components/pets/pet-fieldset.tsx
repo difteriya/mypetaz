@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { fieldOptions, type PetFieldDef } from '@/lib/pets/fields';
 import type { CategoryForForm } from '@/lib/pets/data';
+import { ImageDropZone } from '@/components/uploads/image-drop-zone';
 
 const inputClass =
   'w-full rounded-lg border border-cream-200 bg-white px-3 py-2 outline-none focus:border-brand-400';
@@ -175,17 +176,8 @@ export function PetFieldset({
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="images" className={labelClass}>
-                Şəkillər
-              </label>
-              <input
-                id="images"
-                name="images"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                multiple
-                className="block w-full text-sm"
-              />
+              <span className={labelClass}>Şəkillər</span>
+              <ImageDropZone name="images" multiple maxFiles={10} />
             </div>
           </section>
         </>

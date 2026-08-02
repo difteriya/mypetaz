@@ -4,8 +4,8 @@ import { useActionState } from 'react';
 import { Button } from '@mypet/ui';
 import { saveBusinessProfileAction } from '@/lib/business/actions';
 import { DAYS, type BusinessHours } from '@/lib/business/hours';
-import { imageVariant } from '@/lib/images';
 import { LocationPicker } from './location-picker';
+import { ImageDropZone } from '@/components/uploads/image-drop-zone';
 
 const inputClass =
   'w-full rounded-lg border border-cream-200 bg-white px-3 py-2 outline-none focus:border-brand-400';
@@ -93,19 +93,13 @@ export function BusinessProfileForm({
           <label htmlFor="banner" className={labelClass}>
             Banner
           </label>
-          {defaults.banner && (
-            <img src={imageVariant(defaults.banner, 'card')} alt="Banner" className="mb-1 h-20 w-full rounded object-cover" />
-          )}
-          <input id="banner" name="banner" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="block w-full text-sm" />
+          <ImageDropZone name="banner" currentUrl={defaults.banner} currentAlt="Banner" />
         </div>
         <div className="space-y-1">
           <label htmlFor="logo" className={labelClass}>
             Loqo
           </label>
-          {defaults.logo && (
-            <img src={imageVariant(defaults.logo, 'thumb')} alt="Loqo" className="mb-1 size-16 rounded object-cover" />
-          )}
-          <input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="block w-full text-sm" />
+          <ImageDropZone name="logo" currentUrl={defaults.logo} currentAlt="Loqo" />
         </div>
       </div>
 

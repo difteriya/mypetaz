@@ -205,6 +205,36 @@ export async function deletePetImageAction(formData: FormData): Promise<void> {
   }
 }
 
+/**
+ * Persist a new photo order after the owner drags thumbnails around.
+ * `ids` is the comma-joined image ids in their new order; the first one becomes
+ * the cover. Ids that don't belong to this owner's pet are ignored.
+ */
+export async function reorderPetImagesAction(formData: FormData): Promise<void> {
+  const session = await auth();
+  if (!session?.user) redirect('/login');
+
+  const petId = String(formData.get('petId') ?? '');
+  const ids = String(formData.get('ids') ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (ids.length === 0) return;
+
+  const owned = await prisma.petImage.findMany({
+    where: { id: { in: ids }, pet: { id: petId, ownerId: session.user.id } },
+    select: { id: true },
+  });
+  const ownedIds = new Set(owned.map((i) => i.id));
+
+  await prisma.$transaction(
+    ids
+      .filter((id) => ownedIds.has(id))
+      .map((id, order) => prisma.petImage.update({ where: { id }, data: { order } })),
+  );
+  revalidatePath('/pet/[id]', 'page');
+}
+
 export async function deletePetAction(formData: FormData): Promise<void> {
   const session = await auth();
   if (!session?.user) redirect('/login');
