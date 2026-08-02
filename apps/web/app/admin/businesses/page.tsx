@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { pendingBusinesses, allBusinesses } from '@/lib/admin/data';
 import { approveBusinessAction, rejectBusinessAction } from '@/lib/admin/actions';
 import { AdminStatusBadge } from '@/components/admin/status-badge';
+import { ConfirmDeleteButton } from '@/components/admin/confirm-delete';
+import { adminDeleteBusinessAction } from '@/lib/admin/content-actions';
 
 export default async function AdminBusinessesPage() {
   const [pending, all] = await Promise.all([pendingBusinesses(), allBusinesses()]);
@@ -51,6 +53,13 @@ export default async function AdminBusinessesPage() {
                 <span className="ml-2 text-xs text-brand-900/45">{b.city?.name ?? '—'} · {b.user.name ?? b.user.email}</span>
               </Link>
               <AdminStatusBadge status={b.status} />
+              <Link
+                href={`/admin/businesses/${b.id}/edit`}
+                className="shrink-0 rounded-full border border-cream-200 px-3 py-1 text-xs hover:border-brand-300"
+              >
+                Redaktə
+              </Link>
+              <ConfirmDeleteButton action={adminDeleteBusinessAction} id={b.id} itemName={b.name} />
             </li>
           ))}
         </ul>

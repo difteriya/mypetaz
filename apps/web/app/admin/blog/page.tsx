@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { pendingBlogPosts, allBlogPosts } from '@/lib/admin/data';
 import { approveBlogAction, rejectBlogAction } from '@/lib/admin/actions';
 import { AdminStatusBadge } from '@/components/admin/status-badge';
+import { ConfirmDeleteButton } from '@/components/admin/confirm-delete';
+import { adminDeleteBlogPostAction } from '@/lib/admin/content-actions';
 
 export default async function AdminBlogPage() {
   const [pending, all] = await Promise.all([pendingBlogPosts(), allBlogPosts()]);
@@ -55,6 +57,13 @@ export default async function AdminBlogPage() {
                 <span className="ml-2 text-xs text-brand-900/45">{p.category.name} · {p.user.name ?? 'İstifadəçi'}</span>
               </Link>
               <AdminStatusBadge status={p.status} />
+              <Link
+                href={`/admin/blog/${p.id}/edit`}
+                className="shrink-0 rounded-full border border-cream-200 px-3 py-1 text-xs hover:border-brand-300"
+              >
+                Redaktə
+              </Link>
+              <ConfirmDeleteButton action={adminDeleteBlogPostAction} id={p.id} itemName={p.title} />
             </li>
           ))}
         </ul>

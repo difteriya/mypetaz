@@ -6,6 +6,8 @@ import {
   toggleFeaturedAction,
 } from '@/lib/admin/actions';
 import { AdminStatusBadge } from '@/components/admin/status-badge';
+import { ConfirmDeleteButton } from '@/components/admin/confirm-delete';
+import { adminDeleteListingAction } from '@/lib/admin/content-actions';
 
 export default async function AdminListingsPage() {
   const [pending, active, all] = await Promise.all([
@@ -88,6 +90,13 @@ export default async function AdminListingsPage() {
                 </span>
               </Link>
               <AdminStatusBadge status={l.status} />
+              <Link
+                href={`/admin/listings/${l.id}/edit`}
+                className="shrink-0 rounded-full border border-cream-200 px-3 py-1 text-xs hover:border-brand-300"
+              >
+                Redaktə
+              </Link>
+              <ConfirmDeleteButton action={adminDeleteListingAction} id={l.id} itemName={l.title} />
             </li>
           ))}
         </ul>

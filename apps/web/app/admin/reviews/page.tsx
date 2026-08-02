@@ -1,7 +1,9 @@
 import { pendingReviews, allReviews } from '@/lib/admin/data';
 import { approveReviewAction, rejectReviewAction } from '@/lib/admin/actions';
+import { adminDeleteReviewAction } from '@/lib/admin/content-actions';
 import { StarRating } from '@/components/icons';
 import { AdminStatusBadge } from '@/components/admin/status-badge';
+import { ConfirmDeleteButton } from '@/components/admin/confirm-delete';
 
 const TARGET_LABEL: Record<string, string> = { LISTING: 'Elan', BUSINESS: 'Biznes' };
 
@@ -55,6 +57,11 @@ export default async function AdminReviewsPage() {
                 </span>
               </span>
               <AdminStatusBadge status={r.status} />
+              <ConfirmDeleteButton
+                action={adminDeleteReviewAction}
+                id={r.id}
+                itemName={`${r.user.name ?? 'İstifadəçi'} — ${r.rating}★`}
+              />
             </li>
           ))}
         </ul>

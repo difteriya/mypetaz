@@ -228,6 +228,25 @@ export async function createUserAction(fd: FormData) {
   revalidatePath('/admin/users');
 }
 
+/**
+ * Change an existing user's role — this is how admins are appointed.
+ * You cannot change your own role, so the last admin can never lock themselves
+ * out by accident. The new role takes effect on the user's next login (the role
+ * is carried in the session token).
+ */
+export async function setUserRoleAction(fd: FormData) {
+  const session = await assertAdmin();
+  const userId = id(fd);
+  const role = String(fd.get('role') ?? '');
+  if (!ROLES.includes(role) || userId === session!.user.id) return;
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: role as 'USER' | 'VET' | 'ADMIN' },
+  });
+  revalidatePath('/admin/users');
+}
+
 export async function deleteUserAction(fd: FormData) {
   const session = await assertAdmin();
   const userId = id(fd);

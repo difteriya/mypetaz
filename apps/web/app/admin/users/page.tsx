@@ -1,10 +1,19 @@
+import Link from 'next/link';
+import { auth } from '@mypet/auth';
 import { listUsers } from '@/lib/admin/data';
-import { setUserBlockedAction, createUserAction, deleteUserAction } from '@/lib/admin/actions';
+import {
+  setUserBlockedAction,
+  createUserAction,
+  deleteUserAction,
+  setUserRoleAction,
+} from '@/lib/admin/actions';
+import { ConfirmDeleteButton } from '@/components/admin/confirm-delete';
 
 const inputClass = 'rounded-lg border border-cream-200 px-3 py-1.5 text-sm';
 
 export default async function AdminUsersPage() {
-  const users = await listUsers();
+  const [users, session] = await Promise.all([listUsers(), auth()]);
+  const me = session?.user?.id;
 
   return (
     <div>
@@ -37,8 +46,16 @@ export default async function AdminUsersPage() {
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-b border-cream-100 last:border-0">
-                <td className="p-3">{u.name ?? '—'}</td>
-                <td className="p-3 text-brand-900/70">{u.email}</td>
+                <td className="p-3">
+                  <Link href={`/admin/users/${u.id}`} className="font-medium hover:text-brand-600 hover:underline">
+                    {u.name ?? '—'}
+                  </Link>
+                </td>
+                <td className="p-3">
+                  <Link href={`/admin/users/${u.id}`} className="text-brand-900/70 hover:text-brand-600 hover:underline">
+                    {u.email}
+                  </Link>
+                </td>
                 <td className="p-3">
                   <span className="text-xs">{u.role}</span>
                   {u.accountType === 'BUSINESS' && <span className="ml-1 text-xs text-brand-500">· Biznes</span>}
@@ -51,21 +68,39 @@ export default async function AdminUsersPage() {
                   )}
                 </td>
                 <td className="p-3">
-                  {u.role !== 'ADMIN' && (
-                    <div className="flex justify-end gap-2">
-                      <form action={setUserBlockedAction}>
+                  {u.id === me ? (
+                    <span className="block text-right text-xs text-brand-900/40">Bu sənsən</span>
+                  ) : (
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {/* Appoint or demote an admin. Takes effect on their next login. */}
+                      <form action={setUserRoleAction} className="flex items-center gap-1">
                         <input type="hidden" name="id" value={u.id} />
-                        <input type="hidden" name="blocked" value={u.blocked ? 'false' : 'true'} />
+                        <select name="role" defaultValue={u.role} className="rounded-lg border border-cream-200 px-2 py-1 text-xs">
+                          <option value="USER">USER</option>
+                          <option value="VET">VET</option>
+                          <option value="ADMIN">ADMIN</option>
+                        </select>
                         <button className="rounded-full border border-cream-200 px-3 py-1 text-xs hover:border-brand-300">
-                          {u.blocked ? 'Blokdan çıxar' : 'Blokla'}
+                          Rolu dəyiş
                         </button>
                       </form>
-                      <form action={deleteUserAction}>
-                        <input type="hidden" name="id" value={u.id} />
-                        <button className="rounded-full border border-cream-200 px-3 py-1 text-xs text-badge-lostfound hover:border-badge-lostfound">
-                          Sil
-                        </button>
-                      </form>
+                      {u.role !== 'ADMIN' && (
+                        <>
+                          <form action={setUserBlockedAction}>
+                            <input type="hidden" name="id" value={u.id} />
+                            <input type="hidden" name="blocked" value={u.blocked ? 'false' : 'true'} />
+                            <button className="rounded-full border border-cream-200 px-3 py-1 text-xs hover:border-brand-300">
+                              {u.blocked ? 'Blokdan çıxar' : 'Blokla'}
+                            </button>
+                          </form>
+                          <ConfirmDeleteButton
+                            action={deleteUserAction}
+                            id={u.id}
+                            itemName={u.email}
+                            note="Hesabla birlikdə onun petləri, elanları və bloq yazıları da silinir."
+                          />
+                        </>
+                      )}
                     </div>
                   )}
                 </td>

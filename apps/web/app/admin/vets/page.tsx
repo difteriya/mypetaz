@@ -1,6 +1,9 @@
+import Link from 'next/link';
 import { pendingVets, allVets } from '@/lib/admin/data';
 import { approveVetAction, rejectVetAction } from '@/lib/admin/vet-actions';
+import { adminDeleteVetAction } from '@/lib/admin/content-actions';
 import { AdminStatusBadge } from '@/components/admin/status-badge';
+import { ConfirmDeleteButton } from '@/components/admin/confirm-delete';
 
 export default async function AdminVetsPage() {
   const [pending, all] = await Promise.all([pendingVets(), allVets()]);
@@ -53,6 +56,13 @@ export default async function AdminVetsPage() {
                 <span className="ml-2 text-xs text-brand-900/45">{v.user.name ?? v.user.email}</span>
               </span>
               <AdminStatusBadge status={v.verified ? 'ACTIVE' : 'PENDING'} />
+              <Link
+                href={`/admin/vets/${v.id}/edit`}
+                className="shrink-0 rounded-full border border-cream-200 px-3 py-1 text-xs hover:border-brand-300"
+              >
+                Redaktə
+              </Link>
+              <ConfirmDeleteButton action={adminDeleteVetAction} id={v.id} itemName={v.clinicName} />
             </li>
           ))}
         </ul>

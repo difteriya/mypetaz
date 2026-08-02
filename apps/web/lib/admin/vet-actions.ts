@@ -16,16 +16,20 @@ const reason = (fd: FormData) => {
   return r || null;
 };
 
-/** Approve a vet: verify the profile AND grant the VET role (unlocks the
- * vet.mypet.az panel — takes effect on the vet's next login). */
+/** Approve a vet: verify the profile. Panel access at vet.mypet.az is gated on
+ * `VetProfile.verified`, not on the role — the VET role is only a label, so it
+ * is granted to plain users and never overwrites ADMIN (an admin who is also a
+ * vet must stay an admin). */
 export async function approveVetAction(fd: FormData) {
   await assertAdmin();
   const vet = await prisma.vetProfile.update({
     where: { id: id(fd) },
     data: { verified: true },
-    select: { userId: true, clinicName: true },
+    select: { userId: true, clinicName: true, user: { select: { role: true } } },
   });
-  await prisma.user.update({ where: { id: vet.userId }, data: { role: 'VET' } });
+  if (vet.user.role === 'USER') {
+    await prisma.user.update({ where: { id: vet.userId }, data: { role: 'VET' } });
+  }
   await notify({
     userId: vet.userId,
     type: 'VET_APPROVED',
@@ -42,8 +46,12 @@ export async function rejectVetAction(fd: FormData) {
   const r = reason(fd);
   const vet = await prisma.vetProfile.delete({
     where: { id: id(fd) },
-    select: { userId: true, clinicName: true },
+    select: { userId: true, clinicName: true, user: { select: { role: true } } },
   });
+  // Drop the VET label again; ADMIN is left untouched.
+  if (vet.user.role === 'VET') {
+    await prisma.user.update({ where: { id: vet.userId }, data: { role: 'USER' } });
+  }
   await notify({
     userId: vet.userId,
     type: 'VET_REJECTED',
