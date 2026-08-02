@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     // Uploads are served from the VPS /uploads path (see PLAN.md §3.1).
     formats: ['image/webp'],
   },
+  // Lint is a dev/CI concern (`pnpm lint`), not a deploy one — and on shared
+  // hosting the eslint plugin resolution differs, failing the production build.
+  eslint: { ignoreDuringBuilds: true },
 };
 
 export default nextConfig;

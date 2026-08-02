@@ -1,6 +1,5 @@
 import { getLatestFeedPage, getFeaturedFeedPage } from '@/lib/listings/data';
-
-export const PAGE_SIZE = 12;
+import { PAGE_SIZE } from '@/lib/listings/feed-page-size';
 
 /** Infinite-scroll page of the homepage feed. `?featured=1` → featured listings. */
 export async function GET(req: Request) {

@@ -7,7 +7,7 @@ import {
   getCategoryListingCounts,
 } from '@/lib/listings/data';
 import { ListingFeed } from '@/components/listings/listing-feed';
-import { PAGE_SIZE } from '@/app/api/listings/feed/route';
+import { PAGE_SIZE } from '@/lib/listings/feed-page-size';
 import { getBlockMap } from '@/lib/cms/data';
 import { imageVariant } from '@/lib/images';
 import { JsonLd, APP_URL } from '@/components/json-ld';
