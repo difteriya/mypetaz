@@ -1,6 +1,6 @@
 import 'server-only';
 import { randomBytes } from 'node:crypto';
-import { mkdir, unlink } from 'node:fs/promises';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { slugify } from '@mypet/db';
@@ -84,4 +84,43 @@ export async function removeImage(stem: string): Promise<void> {
       unlink(path.join(UPLOAD_ROOT, `${rel}-${variant}.webp`)).catch(() => {}),
     ),
   );
+}
+
+/**
+ * Store a brand asset (logo, favicon) **as uploaded**, keeping its format.
+ * These must not go through the WebP pipeline: favicons are served straight to
+ * the browser, where SVG/PNG/ICO are the safe formats, and a logo may legitimately
+ * be an SVG. Returns the full public path (no variants — use it verbatim).
+ */
+export async function saveBrandAsset(file: File, base: string): Promise<string> {
+  if (file.size > 1024 * 1024) {
+    throw new Error('Fayl çox böyükdür (maksimum 1 MB)');
+  }
+  const buf = Buffer.from(await file.arrayBuffer());
+
+  const head = buf.toString('ascii', 0, 300).trimStart().toLowerCase();
+  const isSvg = head.startsWith('<svg') || (head.startsWith('<?xml') && head.includes('<svg'));
+  const isIco = buf.length > 4 && buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0x01 && buf[3] === 0x00;
+  const sniffed = sniff(buf);
+
+  let ext: string;
+  if (isSvg) ext = 'svg';
+  else if (isIco) ext = 'ico';
+  else if (sniffed === 'jpeg') ext = 'jpg';
+  else if (sniffed) ext = sniffed;
+  else throw new Error('Yalnız SVG, PNG, ICO, JPEG, WebP və ya GIF qəbul olunur');
+
+  const name = `${slugify(base) || 'brend'}-${randomBytes(4).toString('hex')}.${ext}`;
+  const dir = path.join(UPLOAD_ROOT, 'brand');
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, name), buf);
+
+  return `${PUBLIC_PREFIX}/brand/${name}`;
+}
+
+/** Delete a brand asset by its stored public path. */
+export async function removeBrandAsset(publicPath: string): Promise<void> {
+  if (!publicPath.startsWith(`${PUBLIC_PREFIX}/brand/`)) return;
+  const rel = publicPath.slice(PUBLIC_PREFIX.length + 1);
+  await unlink(path.join(UPLOAD_ROOT, rel)).catch(() => {});
 }

@@ -23,6 +23,7 @@ export function AdminNav({
     { href: '/admin/service-categories', label: 'Xidmətlər', badge: 0 },
     { href: '/admin/blog-categories', label: 'Bloq kat.', badge: 0 },
     { href: '/admin/content', label: 'Kontent', badge: 0 },
+    { href: '/admin/branding', label: 'Brend', badge: 0 },
     { href: '/admin/users', label: 'İstifadəçilər', badge: 0 },
   ];
 
