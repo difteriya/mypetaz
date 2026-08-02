@@ -17,12 +17,12 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json,css}\"",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "db:generate": "pnpm --filter @mypet/db generate",
-    "db:migrate": "pnpm --filter @mypet/db migrate",
-    "db:deploy": "pnpm --filter @mypet/db deploy",
-    "db:studio": "pnpm --filter @mypet/db studio",
-    "db:seed": "pnpm --filter @mypet/db seed",
-    "db:seed:demo": "pnpm --filter @mypet/db seed:demo"
+    "db:generate": "pnpm --filter @mypet/db run generate",
+    "db:migrate": "pnpm --filter @mypet/db run migrate",
+    "db:deploy": "pnpm --filter @mypet/db run deploy",
+    "db:studio": "pnpm --filter @mypet/db run studio",
+    "db:seed": "pnpm --filter @mypet/db run seed",
+    "db:seed:demo": "pnpm --filter @mypet/db run seed:demo"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

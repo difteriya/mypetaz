@@ -6,10 +6,17 @@
 # Set it in Plesk → Domain → Git → Deploy actions as:  bash scripts/deploy.sh
 set -euo pipefail
 
-# Make pnpm available (corepack ships with Node 16.13+). Adjust if you installed
-# pnpm globally instead.
-corepack enable >/dev/null 2>&1 || true
-corepack prepare pnpm@9.15.9 --activate >/dev/null 2>&1 || true
+# Make pnpm available. On shared Plesk hosting `corepack enable` fails with
+# EACCES (it symlinks into the root-owned Node dir), so prefer the per-user
+# install at ~/.local/share/pnpm (see DEPLOY-PLESK.md step 6).
+export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
+export PATH="$PNPM_HOME:$PATH"
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "pnpm not found — install it once with:"
+  echo "  curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=9.15.9 sh -"
+  exit 1
+fi
 
 echo "→ install"
 pnpm install --frozen-lockfile

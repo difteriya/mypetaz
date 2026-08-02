@@ -81,7 +81,12 @@ breaks the pnpm workspace. Dependencies are installed by the deploy script (belo
 Over SSH, from `<repo>`:
 
 ```bash
-corepack enable && corepack prepare pnpm@9.15.9 --activate
+# Shared Plesk hosting has no root, so `corepack enable` fails (EACCES).
+# Install pnpm per-user instead — once:
+curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=9.15.9 sh -
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+
 pnpm install --frozen-lockfile
 pnpm db:generate
 pnpm db:deploy          # creates all tables from prisma/migrations
