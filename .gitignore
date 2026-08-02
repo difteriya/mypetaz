@@ -21,9 +21,10 @@ build/
 packages/db/prisma/*.db
 packages/db/prisma/migrations/dev.db*
 
-# uploads (served from VPS disk in prod; local dev uploads are ignored)
+# uploads (served from VPS disk in prod; local dev uploads are ignored).
+# Keep this anchored to the public dirs — a bare `uploads/` also swallows source
+# folders such as apps/web/components/uploads/.
 apps/*/public/uploads/
-uploads/
 
 # logs
 *.log
